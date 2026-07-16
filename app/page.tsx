@@ -2970,7 +2970,6 @@ function AssembledMatrixDisplay({ matrix }: { matrix: Matrix }) {
   return (
     <svg
       className="assembled-matrix-svg"
-      dir="ltr"
       role="img"
       viewBox="0 0 520 250"
       aria-label="המטריצה המתקבלת"
@@ -5039,7 +5038,7 @@ function PhasePlaneIntro() {
   );
 }
 
-export function PhasePlaneModule() {
+export default function PhasePlaneModule() {
   const [matrix, setMatrix] = useState<Matrix>(presetGroups[0].presets[0].matrix);
   const [matrixInputVersion, setMatrixInputVersion] = useState(0);
   const [mode, setMode] = useState<ScaleMode>("normalized");
@@ -5298,28 +5297,6 @@ export function PhasePlaneModule() {
           />
         )
       )}
-    </main>
-  );
-}
-
-export default function Home() {
-  return (
-    <main className="app-shell course-home" dir="rtl">
-      <header className="course-hero">
-        <p className="course-kicker">104136 · משוואות דיפרנציאליות רגילות</p>
-        <h1>סביבת לימוד אינטראקטיבית במד״ר</h1>
-        <p>
-          אתר הקורס נבנה כקבוצת מודולים קטנים: הסבר תיאורטי קצר, חקירה אינטראקטיבית, ודוגמאות שאפשר לשנות בזמן אמת.
-        </p>
-      </header>
-
-      <section className="course-module-grid" aria-label="מודולי לימוד">
-        <Link className="course-module-card active" href="/phase-plane">
-          <span>מודול פעיל</span>
-          <h2>מישור פאזה</h2>
-          <p>מעבדה אינטראקטיבית למערכות ליניאריות דו־ממדיות, כולל סיווג תמונות והרכבת מטריצות.</p>
-        </Link>
-      </section>
     </main>
   );
 }

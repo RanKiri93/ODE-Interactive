@@ -7,8 +7,10 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "vinext build",
-    "start": "vinext start",
+    "build": "next build --webpack",
+    "build:vinext": "vinext build",
+    "start": "next start",
+    "start:vinext": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },

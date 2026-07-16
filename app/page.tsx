@@ -5319,12 +5319,6 @@ export default function Home() {
           <h2>מישור פאזה</h2>
           <p>מעבדה אינטראקטיבית למערכות ליניאריות דו־ממדיות, כולל סיווג תמונות והרכבת מטריצות.</p>
         </Link>
-
-        <Link className="course-module-card" href="/constant-coefficients-euler">
-          <span>בבנייה</span>
-          <h2>מקדמים קבועים ומשוואות אוילר</h2>
-          <p>שלד למודול הבא: פולינומים אופייניים, הצבות, מעבר בין צורות, ודיון ביציבות.</p>
-        </Link>
       </section>
     </main>
   );

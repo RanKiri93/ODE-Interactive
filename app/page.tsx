@@ -18,10 +18,10 @@ export default function Home() {
           <p>מעבדה אינטראקטיבית למערכות ליניאריות דו־ממדיות, כולל סיווג תמונות והרכבת מטריצות.</p>
         </Link>
 
-        <Link className="course-module-card" href="/constant-coefficients-euler">
-          <span>בבנייה</span>
+        <Link className="course-module-card active" href="/constant-coefficients-euler">
+          <span>מודול פעיל</span>
           <h2>משוואות במקדמים קבועים ומשוואות אוילר</h2>
-          <p>שלד למודול הבא: פולינומים אופייניים, הצבות, מעבר בין צורות, ודיון ביציבות.</p>
+          <p>פולינומים אופייניים, הרכבת משוואות ובסיסים, תרגול, מעבר לאוילר, תנאי התחלה ויציבות.</p>
         </Link>
       </section>
     </main>

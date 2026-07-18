@@ -239,7 +239,25 @@ export type ReconstructionCaseFilter =
   | "one-real-parameter"
   | "impossible";
 
-export type ReconstructionBehaviorCondition = "none" | "all-bounded" | "all-decay";
+export type ReconstructionBehaviorCondition =
+  | "none"
+  | "bounded-plus-infinity"
+  | "bounded-minus-infinity"
+  | "decay-plus-infinity"
+  | "decay-minus-infinity";
+
+export type GivenSolutionExpression =
+  | {
+      kind: "basis-token";
+      token: BasisToken;
+    }
+  | {
+      kind: "linear-combination";
+      terms: Array<{
+        coefficient: number;
+        token: BasisToken;
+      }>;
+    };
 
 export type ReconstructionOutcome = "unique" | "one-real-parameter" | "impossible";
 
@@ -247,12 +265,26 @@ export type ReconstructionFeasibilityAnswer = "feasible" | "infeasible";
 
 export type ReconstructionDetermination = "unique" | "one-real-parameter";
 
-export type LambdaConstraint = "all-real" | "negative" | "non-positive";
+export type LambdaConstraint =
+  | "all-real"
+  | "negative"
+  | "non-positive"
+  | "positive"
+  | "non-negative";
 
 export type ReconstructionImpossibleReason =
   | "forced-degree-exceeds-order"
-  | "forced-solutions-unbounded"
-  | "forced-solutions-do-not-decay";
+  | "given-solution-unbounded-plus-infinity"
+  | "given-solution-unbounded-minus-infinity"
+  | "given-solution-does-not-decay-plus-infinity"
+  | "given-solution-does-not-decay-minus-infinity";
+
+export type ReconstructionFeasibilityAnalysis = {
+  feasible: boolean;
+  reason: ReconstructionImpossibleReason | null;
+  forcedRoots: SolutionRootGroup[];
+  forcedDegree: number;
+};
 
 export type AffineCoefficient = {
   constant: number;
@@ -264,10 +296,13 @@ export type ReconstructionQuestion = {
   equationKind: EquationKind;
   order: number;
   difficulty: Difficulty;
+  givenSolutionExpressions: GivenSolutionExpression[];
   givenSolutions: BasisToken[];
   givenSolutionsLatex: string[];
+  templateId?: string;
   behaviorCondition: ReconstructionBehaviorCondition;
   expectedForcedRoots: SolutionRootGroup[];
+  feasibilityAnalysis: ReconstructionFeasibilityAnalysis;
   analysis: import("./math/reconstruction").ReconstructionAnalysis;
 };
 

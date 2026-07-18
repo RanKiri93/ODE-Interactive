@@ -6,6 +6,7 @@ type PolynomialCoefficientEditorProps = {
   coefficients: string[];
   fieldStatuses: CoefficientFieldStatus[];
   disabled?: boolean;
+  hideLeadingCoefficient?: boolean;
   onChange: (index: number, value: string) => void;
 };
 
@@ -37,13 +38,14 @@ export function PolynomialCoefficientEditor({
   coefficients,
   fieldStatuses,
   disabled = false,
+  hideLeadingCoefficient = false,
   onChange,
 }: PolynomialCoefficientEditorProps) {
-  const terms = Array.from({ length: degree + 1 }, (_, index) => {
-    const power = degree - index;
+  const terms = Array.from({ length: hideLeadingCoefficient ? degree : degree + 1 }, (_, index) => {
+    const power = hideLeadingCoefficient ? degree - 1 - index : degree - index;
     const coeffIndex = power;
     const status = fieldStatuses[coeffIndex] ?? "neutral";
-    const isLast = index === degree;
+    const isLast = index === (hideLeadingCoefficient ? degree - 1 : degree);
 
     return (
       <span className={`polynomial-coefficient-term ${fieldClassName(status)}`} key={power}>
@@ -80,6 +82,16 @@ export function PolynomialCoefficientEditor({
           <span className="polynomial-editor-heading">
             <MathText math="p(r)=" />
           </span>
+          {hideLeadingCoefficient ? (
+            <>
+              <span className="polynomial-coefficient-term polynomial-leading-term">
+                <span className="polynomial-power-label">
+                  <MathText math={degree === 1 ? "r" : `r^{${degree}}`} />
+                </span>
+                <span className="polynomial-plus">+</span>
+              </span>
+            </>
+          ) : null}
           {terms}
         </div>
       </div>

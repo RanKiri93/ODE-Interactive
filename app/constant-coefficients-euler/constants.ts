@@ -126,15 +126,17 @@ export const stabilityReasonExplanation: Record<StabilityReason, string> = {
 
 export const reconstructionCaseFilterLabels: Record<ReconstructionCaseFilter, string> = {
   mixed: "מעורב",
-  unique: "קביעה יחידה",
+  unique: "משוואה יחידה",
   "one-real-parameter": "משפחה חד־פרמטרית",
   impossible: "אין משוואה מתאימה",
 };
 
 export const reconstructionBehaviorLabels: Record<ReconstructionBehaviorCondition, string | null> = {
   none: null,
-  "all-bounded": "כל פתרונות המשוואה חסומים כאשר",
-  "all-decay": "כל פתרונות המשוואה שואפים לאפס כאשר",
+  "bounded-plus-infinity": "כל פתרונות המשוואה חסומים כאשר",
+  "bounded-minus-infinity": "כל פתרונות המשוואה חסומים כאשר",
+  "decay-plus-infinity": "כל פתרונות המשוואה שואפים לאפס כאשר",
+  "decay-minus-infinity": "כל פתרונות המשוואה שואפים לאפס כאשר",
 };
 
 export const reconstructionFeasibilityOptions: Array<{
@@ -148,11 +150,17 @@ export const reconstructionFeasibilityOptions: Array<{
 export const reconstructionDeterminationOptions: Array<{
   value: ReconstructionDetermination;
   label: string;
+  description?: string;
 }> = [
-  { value: "unique", label: "המשוואה המנורמלת נקבעת באופן יחיד." },
+  {
+    value: "unique",
+    label: "משוואה יחידה",
+    description: "השורשים המוכרחים ממלאים את כל סדר המשוואה.",
+  },
   {
     value: "one-real-parameter",
-    label: "מתקבלת משפחה חד־פרמטרית.",
+    label: "משפחה חד־פרמטרית",
+    description: "נותר שורש ממשי חופשי אחד.",
   },
 ];
 
@@ -176,22 +184,42 @@ export const lambdaConstraintOptions: Array<{
   { value: "all-real", label: "כל ערך ממשי", latex: "\\lambda\\in\\mathbb R" },
   { value: "negative", label: "שלילי ממש", latex: "\\lambda<0" },
   { value: "non-positive", label: "לא חיובי", latex: "\\lambda\\le0" },
+  { value: "positive", label: "חיובי ממש", latex: "\\lambda>0" },
+  { value: "non-negative", label: "לא שלילי", latex: "\\lambda\\ge0" },
 ];
 
 export const reconstructionImpossibleReasonOptions: Array<{
   value: ReconstructionImpossibleReason;
   label: string;
+  latex?: string;
+  suffix?: string;
 }> = [
   {
     value: "forced-degree-exceeds-order",
     label: "הפתרונות הנתונים מחייבים מספר שורשים, כולל ריבויים, הגדול מסדר המשוואה.",
   },
   {
-    value: "forced-solutions-unbounded",
-    label: "אחד הפתרונות הנתונים אינו חסום, בניגוד לנתון שכל הפתרונות חסומים.",
+    value: "given-solution-unbounded-plus-infinity",
+    label: "אחד הפתרונות הנתונים אינו חסום כאשר",
+    latex: "x\\to+\\infty",
+    suffix: ", בניגוד לנתון שכל הפתרונות חסומים.",
   },
   {
-    value: "forced-solutions-do-not-decay",
-    label: "אחד הפתרונות הנתונים אינו שואף לאפס, בניגוד לנתון שכל הפתרונות שואפים לאפס.",
+    value: "given-solution-unbounded-minus-infinity",
+    label: "אחד הפתרונות הנתונים אינו חסום כאשר",
+    latex: "x\\to-\\infty",
+    suffix: ", בניגוד לנתון שכל הפתרונות חסומים.",
+  },
+  {
+    value: "given-solution-does-not-decay-plus-infinity",
+    label: "אחד הפתרונות הנתונים אינו שואף לאפס כאשר",
+    latex: "x\\to+\\infty",
+    suffix: ", בניגוד לנתון שכל הפתרונות שואפים לאפס.",
+  },
+  {
+    value: "given-solution-does-not-decay-minus-infinity",
+    label: "אחד הפתרונות הנתונים אינו שואף לאפס כאשר",
+    latex: "x\\to-\\infty",
+    suffix: ", בניגוד לנתון שכל הפתרונות שואפים לאפס.",
   },
 ];

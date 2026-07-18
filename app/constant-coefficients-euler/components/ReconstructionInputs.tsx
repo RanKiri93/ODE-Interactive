@@ -34,7 +34,7 @@ function RadioCard({
   latex,
 }: RadioCardProps) {
   return (
-    <label className={`stability-option-card reconstruction-radio ${checked ? "selected" : ""}`}>
+    <label className={`stability-option-card${checked ? " is-selected" : ""}`}>
       <input
         type="radio"
         name={name}
@@ -43,13 +43,15 @@ function RadioCard({
         disabled={disabled}
         onChange={onChange}
       />
-      <span className="stability-option-title">{title}</span>
-      {description ? <span className="stability-option-description">{description}</span> : null}
-      {latex ? (
-        <span className="reconstruction-radio-latex">
-          <MathText math={latex} />
-        </span>
-      ) : null}
+      <div className="stability-option-content">
+        <div className="stability-option-title">{title}</div>
+        {description ? <div className="stability-option-description">{description}</div> : null}
+        {latex ? (
+          <span className="reconstruction-radio-latex">
+            <MathText math={latex} />
+          </span>
+        ) : null}
+      </div>
     </label>
   );
 }
@@ -94,8 +96,8 @@ export function ReconstructionDeterminationInput({
 }) {
   return (
     <fieldset className="stability-fieldset">
-      <legend>מידת הקביעה</legend>
-      <div className="stability-option-list" role="radiogroup" aria-label="מידת קביעת המשוואה">
+      <legend>יחידות המשוואה</legend>
+      <div className="stability-option-list" role="radiogroup" aria-label="יחידות המשוואה">
         {reconstructionDeterminationOptions.map((option) => (
           <RadioCard
             key={option.value}
@@ -105,6 +107,7 @@ export function ReconstructionDeterminationInput({
             disabled={disabled}
             onChange={() => onChange(option.value)}
             title={option.label}
+            description={option.description}
           />
         ))}
       </div>
@@ -166,18 +169,36 @@ export function ReconstructionImpossibleReasonInput({
 }) {
   return (
     <fieldset className="stability-fieldset">
-      <legend>מהי הסיבה לכך שאין משוואה המתאימה לכל הנתונים?</legend>
+      <legend>מהי הסיבה לכך שלא קיימת משוואה המתאימה לכל הנתונים?</legend>
       <div className="stability-option-list" role="radiogroup" aria-label="סיבת הסתירה">
         {reconstructionImpossibleReasonOptions.map((option) => (
-          <RadioCard
+          <label
             key={option.value}
-            name="reconstruction-impossible-reason"
-            value={option.value}
-            checked={value === option.value}
-            disabled={disabled}
-            onChange={() => onChange(option.value)}
-            title={option.label}
-          />
+            className={`stability-option-card${value === option.value ? " is-selected" : ""}`}
+          >
+            <input
+              type="radio"
+              name="reconstruction-impossible-reason"
+              value={option.value}
+              checked={value === option.value}
+              disabled={disabled}
+              onChange={() => onChange(option.value)}
+            />
+            <div className="stability-option-content">
+              <div className="stability-option-title" dir="rtl">
+                {option.label}
+                {option.latex ? (
+                  <>
+                    {" "}
+                    <span className="stability-inline-math">
+                      <MathText math={option.latex} />
+                    </span>
+                  </>
+                ) : null}
+                {option.suffix ?? null}
+              </div>
+            </div>
+          </label>
         ))}
       </div>
     </fieldset>

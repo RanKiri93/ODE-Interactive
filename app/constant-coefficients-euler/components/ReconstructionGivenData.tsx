@@ -1,4 +1,5 @@
 import { reconstructionBehaviorLabels } from "../constants";
+import { behaviorInfinityLatex } from "../math/reconstructionBehavior";
 import type { ReconstructionQuestion } from "../types";
 import { MathText } from "./MathText";
 
@@ -8,6 +9,7 @@ type ReconstructionGivenDataProps = {
 
 export function ReconstructionGivenData({ question }: ReconstructionGivenDataProps) {
   const behaviorLabel = reconstructionBehaviorLabels[question.behaviorCondition];
+  const behaviorInfinity = behaviorInfinityLatex(question.behaviorCondition);
 
   return (
     <section className="reconstruction-given-data" aria-label="נתוני השאלה">
@@ -17,7 +19,8 @@ export function ReconstructionGivenData({ question }: ReconstructionGivenDataPro
         <MathText math="x>0" />.
       </p>
       <p className="activity-hint normalization-note">
-        במקרה של קביעה יחידה, יש למצוא את המשוואה המנורמלת שעבורה הפולינום האופייני הוא מוני.
+        במקרה של משוואה יחידה, יש למצוא את המשוואה המנורמלת והפולינום האופייני המנורמל המתאימים
+        לנתונים.
       </p>
       <div className="section-heading">פתרונות ידועים</div>
       <ul className="reconstruction-solution-list">
@@ -27,11 +30,11 @@ export function ReconstructionGivenData({ question }: ReconstructionGivenDataPro
           </li>
         ))}
       </ul>
-      {behaviorLabel ? (
+      {behaviorLabel && behaviorInfinity ? (
         <p className="activity-hint reconstruction-behavior" dir="rtl">
           {behaviorLabel}{" "}
           <span className="stability-inline-math">
-            <MathText math={"x\\to\\infty"} />
+            <MathText math={behaviorInfinity} />
           </span>
           .
         </p>

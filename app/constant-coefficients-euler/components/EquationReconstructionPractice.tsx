@@ -21,8 +21,11 @@ import {
 import { buildReconstructionQuestion } from "../practice/reconstructionQuestionGeneration";
 import {
   coefficientFieldStatus,
+  defaultNormalizedTrailingDraft,
   defaultPolynomialDraft,
+  evaluateNormalizedPolynomialAnswer,
   evaluatePolynomialAnswer,
+  normalizedTrailingDraftFromCoefficients,
   polynomialDraftFromCoefficients,
 } from "../practice/polynomialEvaluation";
 import {
@@ -69,15 +72,25 @@ import {
 import { ReconstructionFamilyConclusion } from "./ReconstructionFamilyConclusion";
 import { StepCard } from "./StepCard";
 
-function resetAnswerState(order: number) {
+function usesNormalizedOrder2Input(equationKind: EquationKind, order: number): boolean {
+  return equationKind === "constant-coefficients" && order === 2;
+}
+
+function defaultConclusionCoefficientDraft(equationKind: EquationKind, order: number): string[] {
+  return usesNormalizedOrder2Input(equationKind, order)
+    ? defaultNormalizedTrailingDraft(order)
+    : defaultPolynomialDraft(order);
+}
+
+function resetAnswerState(equationKind: EquationKind, order: number) {
   return {
     feasibilityAnswer: null as ReconstructionFeasibilityAnswer | null,
     rootRows: defaultRootGroupDrafts(1),
     determination: null as ReconstructionDetermination | null,
     lambdaConstraint: null as LambdaConstraint | null,
     impossibleReason: null as ReconstructionImpossibleReason | null,
-    polyCoeffs: defaultPolynomialDraft(order),
-    equationCoeffs: defaultPolynomialDraft(order),
+    polyCoeffs: defaultConclusionCoefficientDraft(equationKind, order),
+    equationCoeffs: defaultConclusionCoefficientDraft(equationKind, order),
     exercise: createInitialReconstructionExerciseState(),
     feasibilityResult: null as { isCorrect: boolean; message: string } | null,
     infeasibilityReasonResult: null as { isCorrect: boolean; message: string } | null,
@@ -89,13 +102,13 @@ function resetAnswerState(order: number) {
   };
 }
 
-function clearFeasibleBranchInputs(order: number) {
+function clearFeasibleBranchInputs(equationKind: EquationKind, order: number) {
   return {
     rootRows: defaultRootGroupDrafts(1),
     determination: null as ReconstructionDetermination | null,
     lambdaConstraint: null as LambdaConstraint | null,
-    polyCoeffs: defaultPolynomialDraft(order),
-    equationCoeffs: defaultPolynomialDraft(order),
+    polyCoeffs: defaultConclusionCoefficientDraft(equationKind, order),
+    equationCoeffs: defaultConclusionCoefficientDraft(equationKind, order),
     rootResult: null as RootComparisonResult | null,
     determinationResult: null as { isCorrect: boolean; message: string } | null,
     polyResult: null as PolynomialEvaluationResult | null,
@@ -141,7 +154,7 @@ export function EquationReconstructionPractice() {
     [seed, equationKind, order, difficulty, caseFilter],
   );
 
-  const expectedFeasibility = expectedFeasibilityFromAnalysis(question.analysis.kind);
+  const expectedFeasibility = expectedFeasibilityFromAnalysis(question.feasibilityAnalysis);
   const expectedForcedDegree = rootGroupsDegree(question.expectedForcedRoots);
   const enteredForcedDegree = totalDraftDegree(rootRows);
   const expectedDetermination =
@@ -184,7 +197,7 @@ export function EquationReconstructionPractice() {
 
     if (value === "infeasible") {
       setImpossibleReason(null);
-      const cleared = clearFeasibleBranchInputs(order);
+      const cleared = clearFeasibleBranchInputs(equationKind, order);
       setRootRows(cleared.rootRows);
       setDetermination(cleared.determination);
       setLambdaConstraint(cleared.lambdaConstraint);
@@ -325,7 +338,7 @@ export function EquationReconstructionPractice() {
   };
 
   const clearAnswerOnly = (nextOrder = order) => {
-    const reset = resetAnswerState(nextOrder);
+    const reset = resetAnswerState(equationKind, nextOrder);
     setFeasibilityAnswer(reset.feasibilityAnswer);
     setRootRows(reset.rootRows);
     setDetermination(reset.determination);
@@ -504,7 +517,10 @@ export function EquationReconstructionPractice() {
     setDetermination(expectedDetermination);
     setDeterminationResult({
       isCorrect: true,
-      message: "סיווג מידת הקביעה נכון.",
+      message:
+        expectedDetermination === "unique"
+          ? "נכון. מתקבלת משוואה מנורמלת יחידה."
+          : "נכון. מתקבלת משפחה חד־פרמטרית של משוואות מנורמלות.",
     });
     setExercise((current) => ({
       ...current,
@@ -514,14 +530,19 @@ export function EquationReconstructionPractice() {
     unlockConclusionStage();
   };
 
+  const normalizedOrder2Input = usesNormalizedOrder2Input(equationKind, order);
+
   const checkConclusion = () => {
     if (exercise.completed || conclusionLocked || question.analysis.kind === "impossible") {
       return;
     }
 
     if (question.analysis.kind === "unique") {
-      const polyEval = evaluatePolynomialAnswer(polyCoeffs, question.analysis.polynomialCoefficients);
-      const eqEval = evaluatePolynomialAnswer(equationCoeffs, question.analysis.equationCoefficients);
+      const evaluate = normalizedOrder2Input
+        ? evaluateNormalizedPolynomialAnswer
+        : evaluatePolynomialAnswer;
+      const polyEval = evaluate(polyCoeffs, question.analysis.polynomialCoefficients);
+      const eqEval = evaluate(equationCoeffs, question.analysis.equationCoefficients);
       setPolyResult(polyEval);
       setEquationResult(eqEval);
       const pair = evaluateUniqueEquationPair(polyEval.isCorrect, eqEval.isCorrect);
@@ -539,11 +560,13 @@ export function EquationReconstructionPractice() {
     const isZeroCollisionIncorrect =
       !result.isCorrect &&
       question.analysis.kind === "one-real-parameter" &&
-      question.behaviorCondition === "all-bounded" &&
       question.analysis.forcedRoots.some(
         (group) => group.kind === "real" && Math.abs(group.real) < EPS && group.multiplicity === 1,
       ) &&
-      lambdaConstraint === "non-positive";
+      ((question.behaviorCondition === "bounded-plus-infinity" &&
+        lambdaConstraint === "non-positive") ||
+        (question.behaviorCondition === "bounded-minus-infinity" &&
+          lambdaConstraint === "non-negative"));
     setConclusionResult({
       isCorrect: result.isCorrect,
       message: isZeroCollisionIncorrect ? "zero-collision-incorrect" : result.message,
@@ -558,8 +581,19 @@ export function EquationReconstructionPractice() {
 
   const revealConclusion = () => {
     if (question.analysis.kind === "unique") {
-      setPolyCoeffs(polynomialDraftFromCoefficients(question.analysis.polynomialCoefficients));
-      setEquationCoeffs(polynomialDraftFromCoefficients(question.analysis.equationCoefficients));
+      if (normalizedOrder2Input) {
+        setPolyCoeffs(
+          normalizedTrailingDraftFromCoefficients(question.analysis.polynomialCoefficients),
+        );
+        setEquationCoeffs(
+          normalizedTrailingDraftFromCoefficients(question.analysis.equationCoefficients),
+        );
+      } else {
+        setPolyCoeffs(polynomialDraftFromCoefficients(question.analysis.polynomialCoefficients));
+        setEquationCoeffs(
+          polynomialDraftFromCoefficients(question.analysis.equationCoefficients),
+        );
+      }
     } else if (question.analysis.kind === "one-real-parameter") {
       setLambdaConstraint(question.analysis.lambdaConstraint);
     }
@@ -582,11 +616,22 @@ export function EquationReconstructionPractice() {
     if (question.analysis.kind === "unique") {
       return (
         <>
+          <p className="activity-hint">
+            השורשים המוכרחים ממלאים את כל סדר המשוואה. לכן מתקבלת משוואה מנורמלת יחידה.
+          </p>
+          <p className="activity-hint">
+            הפולינום האופייני המנורמל הוא:{" "}
+            <MathText
+              math={`p(r)=${formatPolynomialLatex(question.analysis.polynomialCoefficients, "r")}`}
+            />
+          </p>
+          <p className="activity-hint">מהי המשוואה המנורמלת המתאימה לפולינום זה?</p>
           <PolynomialCoefficientEditor
             degree={order}
             coefficients={polyCoeffs}
             fieldStatuses={polyFieldStatuses}
             disabled={exercise.completed}
+            hideLeadingCoefficient={normalizedOrder2Input}
             onChange={(index, value) => {
               setPolyCoeffs((current) => current.map((item, idx) => (idx === index ? value : item)));
               invalidateFromConclusionEdit();
@@ -600,8 +645,11 @@ export function EquationReconstructionPractice() {
               fieldStatuses={equationFieldStatuses}
               dependentVariable="y"
               disabled={exercise.completed}
+              hideLeadingCoefficient={normalizedOrder2Input}
               onChange={(index, value) => {
-                setEquationCoeffs((current) => current.map((item, idx) => (idx === index ? value : item)));
+                setEquationCoeffs((current) =>
+                  current.map((item, idx) => (idx === index ? value : item)),
+                );
                 invalidateFromConclusionEdit();
               }}
             />
@@ -620,9 +668,11 @@ export function EquationReconstructionPractice() {
           {exercise.conclusionStatus === "revealed" || conclusionResult?.isCorrect ? (
             <div className="reconstruction-summary">
               <p className="intro-equation">
+                הפולינום האופייני המנורמל הוא:{" "}
                 <MathText math={`p(r)=${formatPolynomialLatex(question.analysis.polynomialCoefficients, "r")}`} />
               </p>
               <p className="intro-equation">
+                המשוואה המנורמלת היא:{" "}
                 <MathText
                   math={
                     question.equationKind === "constant-coefficients"
@@ -948,12 +998,12 @@ export function EquationReconstructionPractice() {
           {showFeasibleStages ? (
             <StepCard
               stepNumber={determinationStepNumber}
-              title="מידת הקביעה"
+              title="יחידות המשוואה"
               status={exercise.outcomeStatus}
               locked={determinationLocked}
             >
               <p className="activity-hint">
-                האם המשוואה המנורמלת נקבעת באופן יחיד, או שנותרת משפחה חד־פרמטרית?
+                האם הנתונים קובעים משוואה מנורמלת יחידה, או שנותר שורש ממשי חופשי אחד?
               </p>
               <ReconstructionDeterminationInput
                 value={determination}
@@ -980,7 +1030,7 @@ export function EquationReconstructionPractice() {
                   disabled={exercise.completed || determinationLocked}
                   onClick={checkDetermination}
                 >
-                  בדיקת מידת הקביעה
+                  בדיקת יחידות המשוואה
                 </button>
                 <button
                   type="button"

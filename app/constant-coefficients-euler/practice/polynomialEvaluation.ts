@@ -7,8 +7,20 @@ export function defaultPolynomialDraft(degree: number): string[] {
   return Array.from({ length: degree + 1 }, () => "");
 }
 
+export function defaultNormalizedTrailingDraft(degree: number): string[] {
+  return Array.from({ length: degree }, () => "");
+}
+
 export function polynomialDraftFromCoefficients(coefficients: number[]): string[] {
   return coefficients.map((coefficient) => String(coefficient));
+}
+
+export function normalizedTrailingDraftFromCoefficients(coefficients: number[]): string[] {
+  return coefficients.slice(0, -1).map((coefficient) => String(coefficient));
+}
+
+export function padNormalizedTrailingDraft(rawInput: string[], degree: number): string[] {
+  return [...rawInput.slice(0, degree), "1"];
 }
 
 export function evaluatePolynomialAnswer(
@@ -107,6 +119,40 @@ export function coefficientFieldStatus(
     return "correct";
   }
   return "neutral";
+}
+
+export function evaluateNormalizedPolynomialAnswer(
+  rawInput: string[],
+  expected: number[],
+): PolynomialEvaluationResult {
+  if (expected.length < 2) {
+    return evaluatePolynomialAnswer(rawInput, expected);
+  }
+
+  const degree = expected.length - 1;
+  const effectiveInput =
+    rawInput.length === expected.length ? rawInput.slice(0, degree) : rawInput.slice(0, degree);
+
+  if (effectiveInput.length !== degree) {
+    return {
+      isCorrect: false,
+      emptyIndexes: [],
+      invalidIndexes: [],
+      incorrectIndexes: [],
+      errors: [`צפויים ${degree} מקדמים, אך הוזנו ${effectiveInput.length}.`],
+      coefficients: null,
+    };
+  }
+
+  const paddedInput = padNormalizedTrailingDraft(effectiveInput, degree);
+  const fullResult = evaluatePolynomialAnswer(paddedInput, expected);
+
+  return {
+    ...fullResult,
+    emptyIndexes: fullResult.emptyIndexes.filter((index) => index < degree),
+    invalidIndexes: fullResult.invalidIndexes.filter((index) => index < degree),
+    incorrectIndexes: fullResult.incorrectIndexes.filter((index) => index < degree),
+  };
 }
 
 export function assertPolynomialIsMonic(coefficients: number[], degree: number) {

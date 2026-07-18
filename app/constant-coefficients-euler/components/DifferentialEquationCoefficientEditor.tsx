@@ -8,6 +8,7 @@ type DifferentialEquationCoefficientEditorProps = {
   disabled?: boolean;
   dependentVariable?: "u" | "y";
   ariaLabel?: string;
+  hideLeadingCoefficient?: boolean;
   onChange: (index: number, value: string) => void;
 };
 
@@ -60,13 +61,14 @@ export function DifferentialEquationCoefficientEditor({
   disabled = false,
   dependentVariable = "u",
   ariaLabel,
+  hideLeadingCoefficient = false,
   onChange,
 }: DifferentialEquationCoefficientEditorProps) {
-  const terms = Array.from({ length: degree + 1 }, (_, index) => {
-    const order = degree - index;
+  const terms = Array.from({ length: hideLeadingCoefficient ? degree : degree + 1 }, (_, index) => {
+    const order = hideLeadingCoefficient ? degree - 1 - index : degree - index;
     const coeffIndex = order;
     const status = fieldStatuses[coeffIndex] ?? "neutral";
-    const isLast = index === degree;
+    const isLast = index === (hideLeadingCoefficient ? degree - 1 : degree);
 
     return (
       <span className={`polynomial-coefficient-term ${fieldClassName(status)}`} key={order}>
@@ -101,6 +103,14 @@ export function DifferentialEquationCoefficientEditor({
     >
       <div className="polynomial-input-scroll">
         <div className="polynomial-input-row" dir="ltr">
+          {hideLeadingCoefficient ? (
+            <span className="polynomial-coefficient-term polynomial-leading-term">
+              <span className="polynomial-power-label">
+                <MathText math={derivativeLabel(degree, dependentVariable)} />
+              </span>
+              <span className="polynomial-plus">+</span>
+            </span>
+          ) : null}
           {terms}
           <span className="polynomial-power-label">
             <MathText math="=0" />

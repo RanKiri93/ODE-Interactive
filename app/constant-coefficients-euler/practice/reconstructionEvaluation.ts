@@ -1,37 +1,12 @@
-import { formatAffineCoefficientLatex } from "../math/affinePolynomial";
 import { EPS } from "../constants";
+import { formatAffineEquationLatexFromCoefficients } from "../math/algebraicFormatting";
 import type {
   LambdaConstraint,
+  ReconstructionFeasibilityAnalysis,
   ReconstructionFeasibilityAnswer,
   ReconstructionImpossibleReason,
   ReconstructionOutcome,
 } from "../types";
-import { formatNumber } from "../utils/formatting";
-
-function formatAffineEquationTerm(
-  coefficient: { constant: number; lambda: number },
-  symbol: string,
-  isFirst: boolean,
-): string {
-  const body = formatAffineCoefficientLatex(coefficient);
-  if (body === "0") {
-    return "";
-  }
-
-  const needsParen = body.includes("+") || body.includes("-") || body.includes("\\lambda");
-  const wrapped = needsParen ? `\\left(${body}\\right)` : body;
-  const absoluteConstant = Math.abs(coefficient.constant);
-  const absoluteLambda = Math.abs(coefficient.lambda);
-  const isNegative =
-    (Math.abs(absoluteLambda) < EPS && coefficient.constant < 0) ||
-    (Math.abs(absoluteConstant) < EPS && coefficient.lambda < 0);
-
-  if (isFirst) {
-    return isNegative ? `-${wrapped}${symbol}` : `${wrapped}${symbol}`;
-  }
-
-  return isNegative ? `-${wrapped}${symbol}` : `+${wrapped}${symbol}`;
-}
 
 function derivativeLabel(order: number, dependent: "y"): string {
   if (order === 0) {
@@ -49,54 +24,21 @@ function derivativeLabel(order: number, dependent: "y"): string {
 export function formatAffineConstantCoefficientEquation(
   coefficients: Array<{ constant: number; lambda: number }>,
 ): string {
-  const degree = coefficients.length - 1;
-  const terms: string[] = [];
-  let isFirst = true;
-
-  for (let order = degree; order >= 0; order -= 1) {
-    const coefficient = coefficients[order];
-    if (!coefficient) {
-      continue;
-    }
-    const term = formatAffineEquationTerm(coefficient, derivativeLabel(order, "y"), isFirst);
-    if (!term) {
-      continue;
-    }
-    isFirst = false;
-    terms.push(term);
-  }
-
-  return `${terms.join("")}=0`;
+  return formatAffineEquationLatexFromCoefficients(coefficients, (order) =>
+    derivativeLabel(order, "y"),
+  );
 }
 
 export function formatAffineEulerEquation(
   coefficients: Array<{ constant: number; lambda: number }>,
 ): string {
-  const degree = coefficients.length - 1;
-  const terms: string[] = [];
-  let isFirst = true;
-
-  for (let order = degree; order >= 0; order -= 1) {
-    const coefficient = coefficients[order];
-    if (!coefficient) {
-      continue;
+  return formatAffineEquationLatexFromCoefficients(coefficients, (order) => {
+    if (order === 0) {
+      return "y";
     }
-
-    let symbol = "y";
-    if (order > 0) {
-      const powerSuffix = order === 1 ? "" : `^{${order}}`;
-      symbol = `x${powerSuffix}${derivativeLabel(order, "y")}`;
-    }
-
-    const term = formatAffineEquationTerm(coefficient, symbol, isFirst);
-    if (!term) {
-      continue;
-    }
-    isFirst = false;
-    terms.push(term);
-  }
-
-  return `${terms.join("")}=0`;
+    const powerSuffix = order === 1 ? "" : `^{${order}}`;
+    return `x${powerSuffix}${derivativeLabel(order, "y")}`;
+  });
 }
 
 export function evaluateFeasibilityAnswer(
@@ -125,9 +67,9 @@ export function evaluateFeasibilityAnswer(
 }
 
 export function expectedFeasibilityFromAnalysis(
-  kind: ReconstructionOutcome,
+  analysis: ReconstructionFeasibilityAnalysis,
 ): ReconstructionFeasibilityAnswer {
-  return kind === "impossible" ? "infeasible" : "feasible";
+  return analysis.feasible ? "feasible" : "infeasible";
 }
 
 export function evaluateOutcomeAnswer(
@@ -135,12 +77,21 @@ export function evaluateOutcomeAnswer(
   expected: ReconstructionOutcome,
 ): { isCorrect: boolean; message: string } {
   if (!selected) {
-    return { isCorrect: false, message: "יש לבחור את סוג הקביעה." };
+    return { isCorrect: false, message: "יש לבחור את יחידות המשוואה." };
   }
   if (selected === expected) {
-    return { isCorrect: true, message: "סיווג הקביעה נכון." };
+    if (expected === "unique") {
+      return { isCorrect: true, message: "נכון. מתקבלת משוואה מנורמלת יחידה." };
+    }
+    if (expected === "one-real-parameter") {
+      return {
+        isCorrect: true,
+        message: "נכון. מתקבלת משפחה חד־פרמטרית של משוואות מנורמלות.",
+      };
+    }
+    return { isCorrect: true, message: "סיווג יחידות המשוואה נכון." };
   }
-  return { isCorrect: false, message: "סיווג הקביעה אינו מתאים לנתונים." };
+  return { isCorrect: false, message: "סיווג יחידות המשוואה אינו מתאים לנתונים." };
 }
 
 export function evaluateLambdaConstraintAnswer(
@@ -174,26 +125,24 @@ export function evaluateUniqueEquationPair(
   equationCorrect: boolean,
 ): { isCorrect: boolean; message: string } {
   if (polyCorrect && equationCorrect) {
-    return { isCorrect: true, message: "הפולינום והמשוואה נכונים." };
+    return { isCorrect: true, message: "הפולינום האופייני המנורמל והמשוואה המנורמלת נכונים." };
   }
   if (polyCorrect && !equationCorrect) {
-    return { isCorrect: false, message: "הפולינום האופייני נכון, אך המשוואה אינה מתאימה." };
+    return {
+      isCorrect: false,
+      message: "הפולינום האופייני המנורמל נכון, אך המשוואה המנורמלת אינה מתאימה.",
+    };
   }
   if (!polyCorrect && equationCorrect) {
-    return { isCorrect: false, message: "המשוואה מתאימה לפולינום שהוזן, אך הפולינום אינו נכון." };
+    return {
+      isCorrect: false,
+      message: "המשוואה המנורמלת מתאימה לפולינום שהוזן, אך הפולינום האופייני המנורמל אינו נכון.",
+    };
   }
-  return { isCorrect: false, message: "הפולינום והמשוואה אינם נכונים." };
-}
-
-export function formatForcedPolynomialFactored(forcedPolynomial: number[]): string {
-  const degree = forcedPolynomial.length - 1;
-  if (degree <= 0) {
-    return formatNumber(forcedPolynomial[0] ?? 1);
-  }
-  return `q(r)=${forcedPolynomial
-    .map((coefficient, index) => `${formatNumber(coefficient)}r^{${index}}`)
-    .join("+")
-    .replace(/\+-/g, "-")}`;
+  return {
+    isCorrect: false,
+    message: "הפולינום האופייני המנורמל והמשוואה המנורמלת אינם נכונים.",
+  };
 }
 
 export function isCoefficientVectorZero(coefficients: number[]): boolean {

@@ -1,13 +1,19 @@
 import { EPS } from "../constants";
 import { convertPowerToFalling } from "./eulerConversion";
 import { expandPolynomialFromGroups, multiplyPoly } from "./polynomial";
-import { analyzeStability } from "./stability";
+import {
+  behaviorImpossibleReason,
+  detectGivenSolutionBehaviorContradiction,
+  isForcedRootSetCompatibleWithBehavior,
+} from "./reconstructionBehavior";
 import type {
   AffineCoefficient,
   BasisToken,
   EquationKind,
+  GivenSolutionExpression,
   LambdaConstraint,
   ReconstructionBehaviorCondition,
+  ReconstructionFeasibilityAnalysis,
   ReconstructionImpossibleReason,
   SolutionRootGroup,
 } from "../types";
@@ -16,6 +22,7 @@ import {
   mergeForcedRootRequirementsByMaximumMultiplicity,
   realRootIdentityKey,
 } from "./rootCanonicalization";
+import { flattenGivenSolutionExpressions } from "./givenSolutionExpression";
 
 export function rootGroupsDegree(groups: readonly SolutionRootGroup[]): number {
   return groups.reduce(
@@ -70,28 +77,132 @@ function hasSimpleZeroRoot(forcedRoots: readonly SolutionRootGroup[]): boolean {
   );
 }
 
-function forcedRootsViolateBoundedness(forcedRoots: readonly SolutionRootGroup[]): boolean {
-  const stability = analyzeStability(forcedRoots);
-  return stability.classification === "unstable";
+export function deriveLambdaConstraint(
+  forcedRoots: readonly SolutionRootGroup[],
+  behaviorCondition: ReconstructionBehaviorCondition,
+): LambdaConstraint {
+  switch (behaviorCondition) {
+    case "none":
+      return "all-real";
+    case "bounded-plus-infinity":
+      return hasSimpleZeroRoot(forcedRoots) ? "negative" : "non-positive";
+    case "bounded-minus-infinity":
+      return hasSimpleZeroRoot(forcedRoots) ? "positive" : "non-negative";
+    case "decay-plus-infinity":
+      return "negative";
+    case "decay-minus-infinity":
+      return "positive";
+    default:
+      return "all-real";
+  }
 }
 
-function forcedRootsViolateDecay(forcedRoots: readonly SolutionRootGroup[]): boolean {
-  return forcedRoots.some((group) => group.real >= -EPS);
+export { isForcedRootSetCompatibleWithBehavior } from "./reconstructionBehavior";
+
+export function analyzeReconstructionFeasibilityFromForcedRoots(params: {
+  order: number;
+  forcedRoots: SolutionRootGroup[];
+  behaviorCondition: ReconstructionBehaviorCondition;
+  givenSolutions?: BasisToken[];
+}): ReconstructionFeasibilityAnalysis {
+  const forcedDegree = rootGroupsDegree(params.forcedRoots);
+
+  if (forcedDegree > params.order) {
+    return {
+      feasible: false,
+      reason: "forced-degree-exceeds-order",
+      forcedRoots: params.forcedRoots,
+      forcedDegree,
+    };
+  }
+
+  if (params.givenSolutions && params.behaviorCondition !== "none") {
+    const givenContradiction = detectGivenSolutionBehaviorContradiction(
+      params.givenSolutions,
+      params.behaviorCondition,
+    );
+    if (givenContradiction) {
+      return {
+        feasible: false,
+        reason: givenContradiction,
+        forcedRoots: params.forcedRoots,
+        forcedDegree,
+      };
+    }
+  }
+
+  if (!isForcedRootSetCompatibleWithBehavior(params.forcedRoots, params.behaviorCondition)) {
+    return {
+      feasible: false,
+      reason: behaviorImpossibleReason(params.behaviorCondition),
+      forcedRoots: params.forcedRoots,
+      forcedDegree,
+    };
+  }
+
+  return {
+    feasible: true,
+    reason: null,
+    forcedRoots: params.forcedRoots,
+    forcedDegree,
+  };
+}
+
+export function analyzeReconstructionFeasibility(params: {
+  order: number;
+  givenSolutions: BasisToken[];
+  behaviorCondition: ReconstructionBehaviorCondition;
+}): ReconstructionFeasibilityAnalysis {
+  const forcedRoots = inferForcedRootGroups(params.givenSolutions);
+  return analyzeReconstructionFeasibilityFromForcedRoots({
+    order: params.order,
+    forcedRoots,
+    behaviorCondition: params.behaviorCondition,
+    givenSolutions: params.givenSolutions,
+  });
+}
+
+export function inferForcedRootGroupsFromExpressions(
+  expressions: readonly GivenSolutionExpression[],
+): SolutionRootGroup[] {
+  return inferForcedRootGroups(flattenGivenSolutionExpressions(expressions));
+}
+
+export function analyzeReconstructionFeasibilityFromExpressions(params: {
+  order: number;
+  givenSolutionExpressions: GivenSolutionExpression[];
+  behaviorCondition: ReconstructionBehaviorCondition;
+}): ReconstructionFeasibilityAnalysis {
+  const givenSolutions = flattenGivenSolutionExpressions(params.givenSolutionExpressions);
+  const forcedRoots = inferForcedRootGroups(givenSolutions);
+  return analyzeReconstructionFeasibilityFromForcedRoots({
+    order: params.order,
+    forcedRoots,
+    behaviorCondition: params.behaviorCondition,
+    givenSolutions,
+  });
+}
+
+export function analyzeReconstructionFromExpressions(params: {
+  equationKind: EquationKind;
+  order: number;
+  givenSolutionExpressions: GivenSolutionExpression[];
+  behaviorCondition: ReconstructionBehaviorCondition;
+}): ReconstructionAnalysis {
+  const givenSolutions = flattenGivenSolutionExpressions(params.givenSolutionExpressions);
+  return analyzeReconstruction({
+    equationKind: params.equationKind,
+    order: params.order,
+    givenSolutions,
+    behaviorCondition: params.behaviorCondition,
+  });
 }
 
 export function computeLambdaConstraint(
   forcedRoots: readonly SolutionRootGroup[],
   behaviorCondition: ReconstructionBehaviorCondition,
 ): LambdaConstraint {
-  if (behaviorCondition === "all-decay") {
-    return "negative";
-  }
-
-  if (behaviorCondition === "all-bounded") {
-    return hasSimpleZeroRoot(forcedRoots) ? "negative" : "non-positive";
-  }
-
-  return "all-real";
+  return deriveLambdaConstraint(forcedRoots, behaviorCondition);
 }
 
 function buildAffineFromLinearFactor(forcedPolynomial: number[]): AffineCoefficient[] {
@@ -152,20 +263,15 @@ function impossibleReason(
   forcedDegree: number,
   order: number,
   behaviorCondition: ReconstructionBehaviorCondition,
+  givenSolutions: BasisToken[],
 ): ReconstructionImpossibleReason | null {
-  if (forcedDegree > order) {
-    return "forced-degree-exceeds-order";
-  }
-
-  if (behaviorCondition === "all-bounded" && forcedRootsViolateBoundedness(forcedRoots)) {
-    return "forced-solutions-unbounded";
-  }
-
-  if (behaviorCondition === "all-decay" && forcedRootsViolateDecay(forcedRoots)) {
-    return "forced-solutions-do-not-decay";
-  }
-
-  return null;
+  const feasibility = analyzeReconstructionFeasibilityFromForcedRoots({
+    order,
+    forcedRoots,
+    behaviorCondition,
+    givenSolutions,
+  });
+  return feasibility.reason;
 }
 
 export function analyzeReconstruction(params: {
@@ -181,6 +287,7 @@ export function analyzeReconstruction(params: {
     forcedDegree,
     params.order,
     params.behaviorCondition,
+    params.givenSolutions,
   );
 
   if (contradiction) {
@@ -218,7 +325,7 @@ export function analyzeReconstruction(params: {
       kind: "one-real-parameter",
       forcedRoots,
       forcedPolynomialCoefficients,
-      lambdaConstraint: computeLambdaConstraint(forcedRoots, params.behaviorCondition),
+      lambdaConstraint: deriveLambdaConstraint(forcedRoots, params.behaviorCondition),
       polynomialFamily,
       equationFamily,
     };

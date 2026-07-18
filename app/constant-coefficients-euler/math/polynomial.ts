@@ -1,5 +1,6 @@
 import { EPS } from "../constants";
 import type { SolutionRootGroup } from "../types";
+import { formatNormalizedEquationLatex, formatPolynomialLatexFromCoefficients } from "./algebraicFormatting";
 import { formatNumber } from "../utils/formatting";
 
 /**
@@ -59,39 +60,7 @@ export function expandPolynomialFromGroups(groups: SolutionRootGroup[]): number[
 }
 
 export function formatPolynomialLatex(coefficients: number[], variable: string): string {
-  const degree = coefficients.length - 1;
-  const terms: string[] = [];
-
-  for (let power = degree; power >= 0; power -= 1) {
-    const coefficient = coefficients[power];
-    if (Math.abs(coefficient) < EPS) {
-      continue;
-    }
-
-    const sign = coefficient < 0 ? "-" : "+";
-    const absolute = Math.abs(coefficient);
-    let body = "";
-
-    if (power === 0) {
-      body = formatNumber(absolute);
-    } else if (Math.abs(absolute - 1) < EPS) {
-      body = power === 1 ? variable : `${variable}^{${power}}`;
-    } else {
-      body =
-        power === 1
-          ? `${formatNumber(absolute)}${variable}`
-          : `${formatNumber(absolute)}${variable}^{${power}}`;
-    }
-
-    terms.push(`${sign}${body}`);
-  }
-
-  if (terms.length === 0) {
-    return "0";
-  }
-
-  const polynomial = terms.join("");
-  return polynomial.startsWith("+") ? polynomial.slice(1) : polynomial;
+  return formatPolynomialLatexFromCoefficients(coefficients, variable);
 }
 
 function derivativeLabel(order: number, dependent: "y" | "u"): string {
@@ -107,54 +76,12 @@ function derivativeLabel(order: number, dependent: "y" | "u"): string {
   return `${dependent}^{(${order})}`;
 }
 
-function formatEquationTerm(coefficient: number, symbol: string, isFirst: boolean): string {
-  const sign = coefficient < 0 ? "-" : "+";
-  const absolute = Math.abs(coefficient);
-  const body = Math.abs(absolute - 1) < EPS ? symbol : `${formatNumber(absolute)}${symbol}`;
-
-  if (isFirst) {
-    return coefficient < 0 ? `-${body}` : body;
-  }
-
-  return `${sign}${body}`;
-}
-
 export function formatConstantCoefficientEquation(coefficients: number[]): string {
-  const degree = coefficients.length - 1;
-  const terms: string[] = [];
-  let isFirst = true;
-
-  for (let order = degree; order >= 0; order -= 1) {
-    const coefficient = coefficients[order];
-    if (Math.abs(coefficient) < EPS) {
-      continue;
-    }
-
-    const term = formatEquationTerm(coefficient, derivativeLabel(order, "y"), isFirst);
-    isFirst = false;
-    terms.push(term);
-  }
-
-  return `${terms.join("")}=0`;
+  return formatNormalizedEquationLatex(coefficients, (order) => derivativeLabel(order, "y"));
 }
 
 export function formatTransformedConstantCoefficientEquation(coefficients: number[]): string {
-  const degree = coefficients.length - 1;
-  const terms: string[] = [];
-  let isFirst = true;
-
-  for (let order = degree; order >= 0; order -= 1) {
-    const coefficient = coefficients[order];
-    if (Math.abs(coefficient) < EPS) {
-      continue;
-    }
-
-    const term = formatEquationTerm(coefficient, derivativeLabel(order, "u"), isFirst);
-    isFirst = false;
-    terms.push(term);
-  }
-
-  return `${terms.join("")}=0`;
+  return formatNormalizedEquationLatex(coefficients, (order) => derivativeLabel(order, "u"));
 }
 
 function formatRealRootFactor(real: number, multiplicity: number): string {
@@ -182,28 +109,11 @@ export function formatFactoredPolynomialLatex(groups: SolutionRootGroup[]): stri
 }
 
 export function formatEulerEquation(eulerCoefficients: number[]): string {
-  const degree = eulerCoefficients.length - 1;
-  const terms: string[] = [];
-  let isFirst = true;
-
-  for (let order = degree; order >= 0; order -= 1) {
-    const coefficient = eulerCoefficients[order];
-    if (Math.abs(coefficient) < EPS) {
-      continue;
-    }
-
-    let symbol = "y";
+  return formatNormalizedEquationLatex(eulerCoefficients, (order) => {
     if (order === 0) {
-      symbol = "y";
-    } else {
-      const powerSuffix = order === 1 ? "" : `^{${order}}`;
-      symbol = `x${powerSuffix}${derivativeLabel(order, "y")}`;
+      return "y";
     }
-
-    const term = formatEquationTerm(coefficient, symbol, isFirst);
-    isFirst = false;
-    terms.push(term);
-  }
-
-  return `${terms.join("")}=0`;
+    const powerSuffix = order === 1 ? "" : `^{${order}}`;
+    return `x${powerSuffix}${derivativeLabel(order, "y")}`;
+  });
 }

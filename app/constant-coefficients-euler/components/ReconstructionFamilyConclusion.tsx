@@ -1,5 +1,6 @@
 import { EPS } from "../constants";
 import { formatAffinePolynomialLatex, formatLambdaConstraintLatex } from "../math/affinePolynomial";
+import { behaviorInfinityLatex } from "../math/reconstructionBehavior";
 import { formatPolynomialLatex } from "../math/polynomial";
 import {
   formatAffineConstantCoefficientEquation,
@@ -28,40 +29,27 @@ function hasSimpleZeroRoot(forcedRoots: ReconstructionQuestion["expectedForcedRo
 }
 
 function BehaviorConditionBanner({ behavior }: { behavior: ReconstructionBehaviorCondition }) {
-  if (behavior === "none") {
+  const infinityLatex = behaviorInfinityLatex(behavior);
+
+  if (behavior === "none" || !infinityLatex) {
     return (
       <div className="reconstruction-behavior-banner" dir="rtl">
-        <span>
-          לא נתון תנאי נוסף על התנהגות הפתרונות כאשר{" "}
-          <span className="stability-inline-math">
-            <MathText math={"x\\to\\infty"} />
-          </span>
-          .
-        </span>
+        <span>לא נתון תנאי נוסף על התנהגות הפתרונות.</span>
       </div>
     );
   }
 
-  if (behavior === "all-bounded") {
-    return (
-      <div className="reconstruction-behavior-banner" dir="rtl">
-        <span>
-          נתון שכל פתרונות המשוואה חסומים כאשר{" "}
-          <span className="stability-inline-math">
-            <MathText math={"x\\to\\infty"} />
-          </span>
-          .
-        </span>
-      </div>
-    );
-  }
+  const prefix =
+    behavior === "bounded-plus-infinity" || behavior === "bounded-minus-infinity"
+      ? "נתון שכל פתרונות המשוואה חסומים כאשר"
+      : "נתון שכל פתרונות המשוואה שואפים לאפס כאשר";
 
   return (
     <div className="reconstruction-behavior-banner" dir="rtl">
       <span>
-        נתון שכל פתרונות המשוואה שואפים לאפס כאשר{" "}
+        {prefix}{" "}
         <span className="stability-inline-math">
-          <MathText math={"x\\to\\infty"} />
+          <MathText math={infinityLatex} />
         </span>
         .
       </span>
@@ -85,26 +73,37 @@ export function ReconstructionFamilyConclusion({
   const expandedPolyLatex = formatAffinePolynomialLatex(analysis.polynomialFamily);
   const factoredFamilyLatex = `p_\\lambda(r)=\\left(${forcedPolyLatex}\\right)(r-\\lambda)`;
   const expandedFamilyLatex = `p_\\lambda(r)=${expandedPolyLatex}`;
-  const isZeroCollision =
-    question.behaviorCondition === "all-bounded" && hasSimpleZeroRoot(analysis.forcedRoots);
+  const isZeroCollisionPlus =
+    question.behaviorCondition === "bounded-plus-infinity" && hasSimpleZeroRoot(analysis.forcedRoots);
+  const isZeroCollisionMinus =
+    question.behaviorCondition === "bounded-minus-infinity" && hasSimpleZeroRoot(analysis.forcedRoots);
 
   return (
     <div className="reconstruction-family-stage">
       <p className="reconstruction-family-text">
-        מן הפתרונות הנתונים נקבע כבר הגורם הבא של הפולינום האופייני:
+        מן הפתרונות הנתונים נקבע כבר הגורם הבא של הפולינום האופייני המנורמל:
       </p>
       <div className="reconstruction-family-formula">
         <MathText math={`q(r)=${forcedPolyLatex}`} />
       </div>
       <p className="reconstruction-family-text">
-        מאחר שנותרה מעלה אחת בלבד, השורש החסר חייב להיות ממשי. נסמן אותו ב-
-        <MathText math={"\\lambda"} />. לכן הפולינום האופייני המלא הוא:
+        מאחר שנותרה מעלה אחת בלבד, נותר שורש ממשי חופשי אחד. נסמן אותו ב-
+        <MathText math={"\\lambda"} />. לכן:
       </p>
       <div className="reconstruction-family-formula reconstruction-family-formula-scroll">
         <MathText math={factoredFamilyLatex} />
       </div>
       <div className="reconstruction-family-formula">
         <MathText math={expandedFamilyLatex} />
+      </div>
+      <div className="reconstruction-family-formula">
+        <MathText
+          math={
+            question.equationKind === "constant-coefficients"
+              ? formatAffineConstantCoefficientEquation(analysis.equationFamily)
+              : formatAffineEulerEquation(analysis.equationFamily)
+          }
+        />
       </div>
       <BehaviorConditionBanner behavior={question.behaviorCondition} />
       <p className="reconstruction-family-question" id="lambda-constraint-question">
@@ -124,11 +123,10 @@ export function ReconstructionFamilyConclusion({
           הוא ממשי.
         </p>
         <p>
-          השתמשו בנתון על התנהגות הפתרונות כדי לקבוע אם נדרש{" "}
-          <MathText math={"\\lambda\\in\\mathbb R"} />, <MathText math={"\\lambda\\le0"} />, או{" "}
-          <MathText math={"\\lambda<0"} />.
+          השתמשו בנתון על התנהגות הפתרונות כדי לקבוע את תחום הערכים האפשרי של{" "}
+          <MathText math={"\\lambda"} />.
         </p>
-        {isZeroCollision ? (
+        {isZeroCollisionPlus || isZeroCollisionMinus ? (
           <p>
             בדקו מה יקרה לריבוי של השורש <MathText math={"0"} /> אם תבחרו{" "}
             <MathText math={"\\lambda=0"} />.

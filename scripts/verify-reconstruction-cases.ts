@@ -1,10 +1,15 @@
 import {
   analyzeReconstruction,
+  analyzeReconstructionFeasibility,
   inferForcedRootGroups,
   rootGroupsDegree,
 } from "../app/constant-coefficients-euler/math/reconstruction";
 import { formatEulerEquation } from "../app/constant-coefficients-euler/math/polynomial";
-import type { BasisToken, LambdaConstraint, ReconstructionImpossibleReason } from "../app/constant-coefficients-euler/types";
+import type {
+  BasisToken,
+  LambdaConstraint,
+  ReconstructionImpossibleReason,
+} from "../app/constant-coefficients-euler/types";
 import { numbersEqual } from "../app/constant-coefficients-euler/utils/formatting";
 
 function coeffsEqual(a: number[], b: number[]): boolean {
@@ -46,7 +51,7 @@ type CaseSpec = {
   equationKind: "constant-coefficients" | "euler";
   order: number;
   tokens: BasisToken[];
-  behavior: "none" | "all-bounded" | "all-decay";
+  behavior: "none" | "bounded-plus-infinity" | "decay-plus-infinity";
   expectedKind: "unique" | "one-real-parameter" | "impossible";
   expectedPoly?: number[];
   expectedEquation?: number[];
@@ -100,7 +105,7 @@ const cases: CaseSpec[] = [
     equationKind: "constant-coefficients",
     order: 3,
     tokens: [{ kind: "complex-sin", real: 0, imagAbs: 1, power: 0 }],
-    behavior: "all-bounded",
+    behavior: "bounded-plus-infinity",
     expectedKind: "one-real-parameter",
     expectedLambda: "non-positive",
     forcedDegree: 2,
@@ -110,7 +115,7 @@ const cases: CaseSpec[] = [
     equationKind: "constant-coefficients",
     order: 2,
     tokens: [{ kind: "real", real: 0, power: 0 }],
-    behavior: "all-bounded",
+    behavior: "bounded-plus-infinity",
     expectedKind: "one-real-parameter",
     expectedLambda: "negative",
     forcedDegree: 1,
@@ -120,7 +125,7 @@ const cases: CaseSpec[] = [
     equationKind: "euler",
     order: 2,
     tokens: [{ kind: "real", real: 0, power: 0 }],
-    behavior: "all-bounded",
+    behavior: "bounded-plus-infinity",
     expectedKind: "one-real-parameter",
     expectedLambda: "negative",
     forcedDegree: 1,
@@ -140,9 +145,9 @@ const cases: CaseSpec[] = [
     equationKind: "constant-coefficients",
     order: 3,
     tokens: [{ kind: "complex-sin", real: 0, imagAbs: 1, power: 0 }],
-    behavior: "all-decay",
+    behavior: "decay-plus-infinity",
     expectedKind: "impossible",
-    expectedReason: "forced-solutions-do-not-decay",
+    expectedReason: "given-solution-does-not-decay-plus-infinity",
     forcedDegree: 2,
   },
   {
@@ -150,9 +155,9 @@ const cases: CaseSpec[] = [
     equationKind: "euler",
     order: 3,
     tokens: [{ kind: "real", real: 0, power: 1 }],
-    behavior: "all-bounded",
+    behavior: "bounded-plus-infinity",
     expectedKind: "impossible",
-    expectedReason: "forced-solutions-unbounded",
+    expectedReason: "given-solution-unbounded-plus-infinity",
     forcedDegree: 2,
   },
   {
@@ -171,7 +176,138 @@ const cases: CaseSpec[] = [
   },
 ];
 
+type FeasibilityCaseSpec = {
+  name: string;
+  order: number;
+  tokens: BasisToken[];
+  behavior: "none" | "bounded-plus-infinity" | "decay-plus-infinity";
+  expectedFeasible: boolean;
+  expectedReason?: ReconstructionImpossibleReason;
+};
+
+const feasibilityCases: FeasibilityCaseSpec[] = [
+  {
+    name: "Feasibility1-sin-order4-bounded",
+    order: 4,
+    tokens: [{ kind: "complex-sin", real: 0, imagAbs: 1, power: 0 }],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: true,
+  },
+  {
+    name: "Feasibility2-sin-order2-bounded",
+    order: 2,
+    tokens: [{ kind: "complex-sin", real: 0, imagAbs: 1, power: 0 }],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: true,
+  },
+  {
+    name: "Feasibility3-sin-order2-decay",
+    order: 2,
+    tokens: [{ kind: "complex-sin", real: 0, imagAbs: 1, power: 0 }],
+    behavior: "decay-plus-infinity",
+    expectedFeasible: false,
+    expectedReason: "given-solution-does-not-decay-plus-infinity",
+  },
+  {
+    name: "Feasibility4-constant-order2-bounded",
+    order: 2,
+    tokens: [{ kind: "real", real: 0, power: 0 }],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: true,
+  },
+  {
+    name: "Feasibility5-constant-order2-decay",
+    order: 2,
+    tokens: [{ kind: "real", real: 0, power: 0 }],
+    behavior: "decay-plus-infinity",
+    expectedFeasible: false,
+    expectedReason: "given-solution-does-not-decay-plus-infinity",
+  },
+  {
+    name: "Feasibility6-linear-order2-bounded",
+    order: 2,
+    tokens: [{ kind: "real", real: 0, power: 1 }],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: false,
+    expectedReason: "given-solution-unbounded-plus-infinity",
+  },
+  {
+    name: "Feasibility7-xsin-bounded",
+    order: 4,
+    tokens: [{ kind: "complex-sin", real: 0, imagAbs: 1, power: 1 }],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: false,
+    expectedReason: "given-solution-unbounded-plus-infinity",
+  },
+  {
+    name: "Feasibility8-negative-repeated-bounded",
+    order: 4,
+    tokens: [
+      { kind: "real", real: -1, power: 0 },
+      { kind: "real", real: -1, power: 1 },
+      { kind: "real", real: -1, power: 2 },
+    ],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: true,
+  },
+  {
+    name: "Feasibility9-positive-root-bounded",
+    order: 2,
+    tokens: [{ kind: "real", real: 1, power: 0 }],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: false,
+    expectedReason: "given-solution-unbounded-plus-infinity",
+  },
+  {
+    name: "Feasibility10-negative-complex-pair",
+    order: 4,
+    tokens: [{ kind: "complex-cos", real: -1, imagAbs: 2, power: 0 }],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: true,
+  },
+  {
+    name: "Feasibility11-degree-overflow",
+    order: 3,
+    tokens: [{ kind: "complex-sin", real: 0, imagAbs: 1, power: 1 }],
+    behavior: "bounded-plus-infinity",
+    expectedFeasible: false,
+    expectedReason: "forced-degree-exceeds-order",
+  },
+];
+
 let failed = 0;
+
+for (const spec of feasibilityCases) {
+  const analysis = analyzeReconstructionFeasibility({
+    order: spec.order,
+    givenSolutions: spec.tokens,
+    behaviorCondition: spec.behavior,
+  });
+
+  let ok = analysis.feasible === spec.expectedFeasible;
+  if (spec.expectedReason !== undefined) {
+    ok = ok && analysis.reason === spec.expectedReason;
+  } else {
+    ok = ok && analysis.reason === null;
+  }
+
+  console.log(ok ? "OK" : "FAIL", spec.name, analysis.feasible, analysis.reason);
+  if (!ok) {
+    failed += 1;
+  }
+}
+
+const negativeComplexDecay = analyzeReconstructionFeasibility({
+  order: 4,
+  givenSolutions: [{ kind: "complex-cos", real: -1, imagAbs: 2, power: 0 }],
+  behaviorCondition: "decay-plus-infinity",
+});
+const negativeComplexDecayOk =
+  negativeComplexDecay.feasible === true && negativeComplexDecay.reason === null;
+console.log(negativeComplexDecayOk ? "OK" : "FAIL", "Feasibility10-negative-complex-pair-decay");
+if (!negativeComplexDecayOk) {
+  failed += 1;
+}
 
 for (const spec of cases) {
   const analysis = analyzeReconstruction({

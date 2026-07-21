@@ -119,7 +119,7 @@ export function EulerBasisEditor({
               </label>
               <div className="basis-preview">
                 {previewToken ? (
-                  <MathText math={formatBasisTokenPreview(previewToken, previewContext)} />
+                  <MathText size="compact" math={formatBasisTokenPreview(previewToken, previewContext)} />
                 ) : (
                   <span>תצוגה מקדימה</span>
                 )}

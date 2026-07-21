@@ -13,6 +13,22 @@ function isZero(value: number): boolean {
   return Math.abs(value) < EPS;
 }
 
+export function formatShiftedVariable(variable: string, root: number): string {
+  const normalized = normalizeNumber(root);
+  if (isZero(normalized)) {
+    return variable;
+  }
+  if (normalized > 0) {
+    return `${variable}-${formatNumber(normalized)}`;
+  }
+  return `${variable}+${formatNumber(Math.abs(normalized))}`;
+}
+
+export function formatNumericSquare(value: number): string {
+  const normalized = normalizeNumber(value);
+  return formatNumber(normalized * normalized);
+}
+
 export function numericToDisplayCoefficient(value: number): DisplayCoefficient {
   const normalized = normalizeNumber(value);
   if (isZero(normalized)) {

@@ -1,7 +1,10 @@
 import { EPS } from "../constants";
 import { formatAffineEquationLatexFromCoefficients } from "../math/algebraicFormatting";
 import type {
+  BetaConstraint,
+  ComplexPairDomain,
   LambdaConstraint,
+  RealPairDomain,
   ReconstructionFeasibilityAnalysis,
   ReconstructionFeasibilityAnswer,
   ReconstructionImpossibleReason,
@@ -89,6 +92,12 @@ export function evaluateOutcomeAnswer(
         message: "נכון. מתקבלת משפחה חד־פרמטרית של משוואות מנורמלות.",
       };
     }
+    if (expected === "two-parameter") {
+      return {
+        isCorrect: true,
+        message: "נכון. מתקבלת משפחה דו־פרמטרית של משוואות מנורמלות.",
+      };
+    }
     return { isCorrect: true, message: "סיווג יחידות המשוואה נכון." };
   }
   return { isCorrect: false, message: "סיווג יחידות המשוואה אינו מתאים לנתונים." };
@@ -105,6 +114,35 @@ export function evaluateLambdaConstraintAnswer(
     return { isCorrect: true, message: "lambda-constraint-correct" };
   }
   return { isCorrect: false, message: "התנאי שבחרתם אינו מתאים לנתון על התנהגות הפתרונות." };
+}
+
+export function evaluateRealPairDomainAnswer(
+  selected: RealPairDomain | null,
+  expected: RealPairDomain,
+): { isCorrect: boolean; message: string } {
+  if (!selected) {
+    return { isCorrect: false, message: "יש לבחור את התנאים על שני השורשים הממשיים החסרים." };
+  }
+  if (selected === expected) {
+    return { isCorrect: true, message: "real-pair-domain-correct" };
+  }
+  return { isCorrect: false, message: "התנאים שבחרתם אינם מתאימים לנתון על התנהגות הפתרונות." };
+}
+
+export function evaluateComplexPairDomainAnswer(
+  selected: { alphaConstraint: LambdaConstraint | null; betaConstraint: BetaConstraint | null },
+  expected: ComplexPairDomain,
+): { isCorrect: boolean; message: string } {
+  if (!selected.alphaConstraint || !selected.betaConstraint) {
+    return { isCorrect: false, message: "יש להשלים את התנאים על הפרמטרים של הזוג המרוכב." };
+  }
+  if (
+    selected.alphaConstraint === expected.alphaConstraint &&
+    selected.betaConstraint === expected.betaConstraint
+  ) {
+    return { isCorrect: true, message: "complex-pair-domain-correct" };
+  }
+  return { isCorrect: false, message: "התנאים שבחרתם אינם מתאימים לנתון על התנהגות הפתרונות." };
 }
 
 export function evaluateImpossibleReasonAnswer(

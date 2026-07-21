@@ -28,7 +28,7 @@ export function ConstantCoefficientsEulerIntro() {
                 <strong>הגדרה.</strong> משוואה ליניארית מסדר <MathText math="n" /> במקדמים קבועים היא משוואה מהצורה
               </p>
               <p className="intro-equation">
-                <MathText math="a_ny^{(n)}+a_{n-1}y^{(n-1)}+\dots+a_1y'+a_0y=f(x)" />
+                <MathText block math="a_ny^{(n)}+a_{n-1}y^{(n-1)}+\dots+a_1y'+a_0y=f(x)" />
               </p>
               <p>
                 כאשר <MathText math="a_0,\dots,a_n\in\mathbb{R}" /> וכאשר <MathText math="a_n\neq 0" />. במידה
@@ -51,7 +51,7 @@ export function ConstantCoefficientsEulerIntro() {
                 <MathText math="a_ny^{(n)}+\dots+a_0y=0" /> משוואה ליניארית הומוגנית במקדמים קבועים. הפולינום
               </p>
               <p className="intro-equation">
-                <MathText math="p(r)=a_nr^n+a_{n-1}r^{n-1}+\dots+a_1r+a_0" />
+                <MathText block math="p(r)=a_nr^n+a_{n-1}r^{n-1}+\dots+a_1r+a_0" />
               </p>
               <p>
                 כאשר המקדמים הם המקדמים שמופיעים במד״ר, מכונה הפולינום האופייני של המשוואה.
@@ -77,7 +77,7 @@ export function ConstantCoefficientsEulerIntro() {
                         ממשי של הפולינום האופייני מריבוי <MathText math="k" />. אזי, הקבוצה
                       </p>
                       <p className="intro-equation">
-                        <MathText math="\{e^{rx},xe^{rx},\dots,x^{k-1}e^{rx}\}" />
+                        <MathText block math="\{e^{rx},xe^{rx},\dots,x^{k-1}e^{rx}\}" />
                       </p>
                       <p>היא קבוצה של <MathText math="k" /> פתרונות בלתי תלויים למד״ר.</p>
                     </div>
@@ -96,7 +96,7 @@ export function ConstantCoefficientsEulerIntro() {
                         מריבוי <MathText math="k" />. בנוסף, הקבוצה
                       </p>
                       <p className="intro-equation">
-                        <MathText math="\{e^{rx},xe^{rx},\dots,x^{k-1}e^{rx},e^{\bar{r}x},xe^{\bar{r}x},\dots,x^{k-1}e^{\bar{r}x}\}" />
+                        <MathText block math="\{e^{rx},xe^{rx},\dots,x^{k-1}e^{rx},e^{\bar{r}x},xe^{\bar{r}x},\dots,x^{k-1}e^{\bar{r}x}\}" />
                       </p>
                       <p>
                         היא קבוצה של <MathText math="2k" /> פתרונות בלתי תלויים למד״ר.
@@ -108,7 +108,7 @@ export function ConstantCoefficientsEulerIntro() {
                       בסיס
                     </p>
                     <p className="intro-equation">
-                      <MathText math="\{x^me^{rx},x^me^{\bar{r}x}\}\mapsto\left\{\frac{x^me^{rx}+x^me^{\bar{r}x}}{2},\frac{x^me^{rx}-x^me^{\bar{r}x}}{2i}\right\}=\left\{x^me^{\alpha x}\cos(\beta x),x^me^{\alpha x}\sin(\beta x)\right\}" />
+                      <MathText block math="\{x^me^{rx},x^me^{\bar{r}x}\}\mapsto\left\{\frac{x^me^{rx}+x^me^{\bar{r}x}}{2},\frac{x^me^{rx}-x^me^{\bar{r}x}}{2i}\right\}=\left\{x^me^{\alpha x}\cos(\beta x),x^me^{\alpha x}\sin(\beta x)\right\}" />
                     </p>
                     <p>
                       ונקבל בסיס חדש שמורכב מפונקציות ממשיות (לאחר שנבצע את ההחלפה לכל{" "}
@@ -116,7 +116,7 @@ export function ConstantCoefficientsEulerIntro() {
                       ). כלומר, נקבל את הבסיס
                     </p>
                     <p className="intro-equation">
-                      <MathText math="\begin{cases} e^{\alpha x}\cos(\beta x),\,xe^{\alpha x}\cos(\beta x),\,\dots,\,x^{k-1}e^{\alpha x}\cos(\beta x) \\ e^{\alpha x}\sin(\beta x),\,xe^{\alpha x}\sin(\beta x),\,\dots,\,x^{k-1}e^{\alpha x}\sin(\beta x)\end{cases}" />
+                      <MathText block math="\begin{cases} e^{\alpha x}\cos(\beta x),\,xe^{\alpha x}\cos(\beta x),\,\dots,\,x^{k-1}e^{\alpha x}\cos(\beta x) \\ e^{\alpha x}\sin(\beta x),\,xe^{\alpha x}\sin(\beta x),\,\dots,\,x^{k-1}e^{\alpha x}\sin(\beta x)\end{cases}" />
                     </p>
                   </div>
                 </details>
@@ -131,7 +131,7 @@ export function ConstantCoefficientsEulerIntro() {
                 משוואת אוילר מסדר <MathText math="n" /> היא משוואה מהצורה
               </p>
               <p className="intro-equation">
-                <MathText math="a_nx^ny^{(n)}+a_{n-1}x^{n-1}y^{(n-1)}+\dots+a_1xy'+a_0y=f(x)" />
+                <MathText block math="a_nx^ny^{(n)}+a_{n-1}x^{n-1}y^{(n-1)}+\dots+a_1xy'+a_0y=f(x)" />
               </p>
               <p>
                 כאשר <MathText math="a_0,\dots,a_n\in\mathbb{R}" /> וכאשר <MathText math="a_n\neq 0" />. במידה
@@ -156,20 +156,20 @@ export function ConstantCoefficientsEulerIntro() {
                   <MathText math="y(x)" /> פתרון למשוואת אוילר
                 </p>
                 <p className="intro-equation">
-                  <MathText math="a_nx^ny^{(n)}+a_{n-1}x^{n-1}y^{(n-1)}+\dots+a_1xy'+a_0y=f(x)" />
+                  <MathText block math="a_nx^ny^{(n)}+a_{n-1}x^{n-1}y^{(n-1)}+\dots+a_1xy'+a_0y=f(x)" />
                 </p>
                 <p>
                   בקרן <MathText math="(0,\infty)" />. אם ורק אם הפונקציה <MathText math="u(t):=y(e^t)" /> היא
                   פתרון למשוואה במקדמים קבועים
                 </p>
                 <p className="intro-equation">
-                  <MathText math="b_nu^{(n)}+b_{n-1}u^{(n-1)}+\dots+b_1u'+b_0u=f(e^t)" />
+                  <MathText block math="b_nu^{(n)}+b_{n-1}u^{(n-1)}+\dots+b_1u'+b_0u=f(e^t)" />
                 </p>
                 <p>
                   כאשר <MathText math="b_0,\dots,b_n\in\mathbb{R}" /> הם המקדמים של הפולינום:
                 </p>
                 <p className="intro-equation">
-                  <MathText math="p(r)=a_nr(r-1)\dots(r-n+1)+a_{n-1}r(r-1)\dots(r-n+2)+\dots+a_1r+a_0=b_nr^n+\dots+b_0" />
+                  <MathText block math="p(r)=a_nr(r-1)\dots(r-n+1)+a_{n-1}r(r-1)\dots(r-n+2)+\dots+a_1r+a_0=b_nr^n+\dots+b_0" />
                 </p>
               </div>
 
@@ -179,7 +179,7 @@ export function ConstantCoefficientsEulerIntro() {
                 ההצבה
               </p>
               <p className="intro-equation">
-                <MathText math="y(x)=u\left(\ln(x)\right)" />
+                <MathText block math="y(x)=u\left(\ln(x)\right)" />
               </p>
               <p>
                 <strong>שימו לב!</strong> שיטה זו תקפה גם למשוואה האי-הומוגנית, אך בפרט, למשוואה ההומוגנית.
@@ -200,14 +200,14 @@ export function ConstantCoefficientsEulerIntro() {
                         ממשי של הפולינום האופייני מריבוי <MathText math="k" />. אזי, הקבוצה
                       </p>
                       <p className="intro-equation">
-                        <MathText math="\{e^{rt},te^{rt},\dots,t^{k-1}e^{rt}\}" />
+                        <MathText block math="\{e^{rt},te^{rt},\dots,t^{k-1}e^{rt}\}" />
                       </p>
                       <p>
                         היא קבוצה של <MathText math="k" /> פתרונות בת{'"'}ל למשוואה המתאימה ל-<MathText math="u(t)" />.
                         בזכות ההצבה <MathText math="y(x)=u(\ln(x))" />, מקבלים כי הקבוצה
                       </p>
                       <p className="intro-equation">
-                        <MathText math="\{x^r,\ln(x)x^r,\dots,\ln^{k-1}(x)x^r\}" />
+                        <MathText block math="\{x^r,\ln(x)x^r,\dots,\ln^{k-1}(x)x^r\}" />
                       </p>
                       <p>
                         היא קבוצה של <MathText math="k" /> פתרונות בת{'"'}ל למשוואה המתאימה ל-<MathText math="y(x)" />.
@@ -227,14 +227,14 @@ export function ConstantCoefficientsEulerIntro() {
                         <MathText math="k" />. בנוסף, הקבוצה
                       </p>
                       <p className="intro-equation">
-                        <MathText math="\begin{cases} e^{\alpha t}\cos(\beta t),te^{\alpha t}\cos(\beta t),\dots,t^{k-1}e^{\alpha t}\cos(\beta t) \\ e^{\alpha t}\sin(\beta t),te^{\alpha t}\sin(\beta t),\dots,t^{k-1}e^{\alpha t}\sin(\beta t) \end{cases}" />
+                        <MathText block math="\begin{cases} e^{\alpha t}\cos(\beta t),te^{\alpha t}\cos(\beta t),\dots,t^{k-1}e^{\alpha t}\cos(\beta t) \\ e^{\alpha t}\sin(\beta t),te^{\alpha t}\sin(\beta t),\dots,t^{k-1}e^{\alpha t}\sin(\beta t) \end{cases}" />
                       </p>
                       <p>
                         היא קבוצה של <MathText math="2k" /> פתרונות בת{'"'}ל למשוואה המתאימה ל-<MathText math="u(t)" />.
                         ובזכות ההצבה <MathText math="y(x)=u(\ln(x))" /> מקבלים כי הקבוצה
                       </p>
                       <p className="intro-equation">
-                        <MathText math="\begin{cases} x^{\alpha}\cos(\beta\ln(x)),\,\ln(x)x^{\alpha}\cos(\beta\ln(x)),\dots,\,\ln^{k-1}(x)x^{\alpha}\cos(\beta\ln(x)) \\ x^{\alpha}\sin(\beta\ln(x)),\,\ln(x)x^{\alpha}\sin(\beta\ln(x)),\dots,\,\ln^{k-1}(x)x^{\alpha}\sin(\beta\ln(x)) \end{cases}" />
+                        <MathText block math="\begin{cases} x^{\alpha}\cos(\beta\ln(x)),\,\ln(x)x^{\alpha}\cos(\beta\ln(x)),\dots,\,\ln^{k-1}(x)x^{\alpha}\cos(\beta\ln(x)) \\ x^{\alpha}\sin(\beta\ln(x)),\,\ln(x)x^{\alpha}\sin(\beta\ln(x)),\dots,\,\ln^{k-1}(x)x^{\alpha}\sin(\beta\ln(x)) \end{cases}" />
                       </p>
                       <p>
                         היא קבוצה של <MathText math="2k" /> פתרונות בת{'"'}ל למשוואה המתאימה ל-<MathText math="y(x)" />.

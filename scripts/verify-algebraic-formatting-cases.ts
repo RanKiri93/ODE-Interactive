@@ -1,8 +1,12 @@
 import {
   formatAffinePolynomialLatexFromCoefficients,
   formatPolynomialLatexFromCoefficients,
+  formatShiftedVariable,
 } from "../app/constant-coefficients-euler/math/algebraicFormatting";
-import { formatConstantCoefficientEquation } from "../app/constant-coefficients-euler/math/polynomial";
+import {
+  formatConstantCoefficientEquation,
+  formatFactoredPolynomialLatex,
+} from "../app/constant-coefficients-euler/math/polynomial";
 import { formatAffineConstantCoefficientEquation } from "../app/constant-coefficients-euler/practice/reconstructionEvaluation";
 import { evaluateNormalizedPolynomialAnswer } from "../app/constant-coefficients-euler/practice/polynomialEvaluation";
 
@@ -79,6 +83,72 @@ assert(
 );
 assert("affine-family-no-double-neg", forbiddenPatterns(affinePoly) && forbiddenPatterns(affineEq));
 assert("affine-family-no-1r2", !affinePoly.includes("1r^2") && !affineEq.includes("1y''"));
+
+function forbiddenFactoredPatterns(value: string): boolean {
+  return (
+    !value.includes("--") &&
+    !value.includes("+-") &&
+    !value.includes("-(-") &&
+    !value.includes("-0") &&
+    !/\d+\^2/.test(value)
+  );
+}
+
+function assertFactored(name: string, actual: string, expected: string) {
+  assert(name, actual === expected, actual, expected);
+  assert(`${name}-forbidden-patterns`, forbiddenFactoredPatterns(actual), actual);
+}
+
+assert("shifted-variable-positive", formatShiftedVariable("r", 3) === "r-3");
+assert("shifted-variable-negative", formatShiftedVariable("r", -2) === "r+2");
+assert("shifted-variable-zero", formatShiftedVariable("r", 0) === "r");
+
+assertFactored(
+  "factored-screenshot-case",
+  formatFactoredPolynomialLatex([
+    { kind: "real", real: 3, multiplicity: 1 },
+    { kind: "complex", real: -2, imagAbs: 1, multiplicity: 1 },
+  ]),
+  "(r-3)\\left((r+2)^2+1\\right)",
+);
+
+assertFactored(
+  "factored-positive-real-part",
+  formatFactoredPolynomialLatex([
+    { kind: "real", real: -1, multiplicity: 1 },
+    { kind: "complex", real: 2, imagAbs: 3, multiplicity: 1 },
+  ]),
+  "(r+1)\\left((r-2)^2+9\\right)",
+);
+
+assertFactored(
+  "factored-zero-real-part",
+  formatFactoredPolynomialLatex([
+    { kind: "real", real: 2, multiplicity: 1 },
+    { kind: "complex", real: 0, imagAbs: 2, multiplicity: 1 },
+  ]),
+  "(r-2)r^2+4",
+);
+
+assertFactored(
+  "factored-negative-real-roots",
+  formatFactoredPolynomialLatex([
+    { kind: "real", real: -3, multiplicity: 1 },
+    { kind: "real", real: -1, multiplicity: 1 },
+    { kind: "real", real: 2, multiplicity: 1 },
+  ]),
+  "(r+3)(r+1)(r-2)",
+);
+
+assertFactored(
+  "factored-zero-real-root",
+  formatFactoredPolynomialLatex([
+    { kind: "real", real: 0, multiplicity: 1 },
+    { kind: "real", real: 1, multiplicity: 1 },
+    { kind: "real", real: -2, multiplicity: 1 },
+  ]),
+  "r(r-1)(r+2)",
+);
 
 const normalizedEval = evaluateNormalizedPolynomialAnswer(["4", "-4"], [4, -4, 1]);
 assert("normalized-eval-accepts-two-coefficients", normalizedEval.isCorrect === true);

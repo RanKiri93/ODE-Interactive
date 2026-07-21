@@ -14,6 +14,9 @@
   --gold: #c38c2c;
   --panel: rgba(255, 252, 244, 0.82);
   --shadow: 0 24px 80px rgba(37, 43, 51, 0.12);
+  --math-size-inline: 1em;
+  --math-size-compact: clamp(1rem, 1.1vw, 1.12rem);
+  --math-size-standard: clamp(1.28rem, 1.55vw, 1.4rem);
 }
 
 @theme inline {
@@ -138,6 +141,22 @@ nav {
   min-height: calc(100vh - 142px);
 }
 
+.equation-assembler-grid .canvas-header strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.equation-assembler-grid .result-card strong:not(.assembler-matrix-result) {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.equation-assembler-grid .equation-coefficient-list strong {
+  font-size: 0.98rem;
+}
+
 .control-panel,
 .analysis-panel,
 .canvas-panel {
@@ -170,8 +189,8 @@ nav {
 
 .section-heading,
 .canvas-label,
-.result-card span,
-.metric span,
+.result-card > span,
+.metric > span,
 .scaling-note strong {
   color: var(--muted);
   font-size: 0.78rem;
@@ -192,6 +211,32 @@ code {
   font-size: 0.92em;
 }
 
+.math-display {
+  display: block;
+  direction: ltr;
+  unicode-bidi: isolate;
+  max-width: 100%;
+}
+
+.math-display-centered {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.math-display .katex,
+.math-display .katex-display {
+  font-size: var(--math-size-standard) !important;
+}
+
+.math-display .katex-display {
+  margin: 0;
+  text-align: center;
+}
+
 .math-render {
   display: inline-flex;
   direction: ltr;
@@ -200,8 +245,51 @@ code {
   unicode-bidi: isolate;
 }
 
-.math-render .katex {
-  font-size: 1.02em;
+.math-render[data-variant="inline"] .katex {
+  font-size: var(--math-size-inline) !important;
+}
+
+.math-render[data-variant="compact"] .katex {
+  font-size: var(--math-size-compact) !important;
+}
+
+.math-render[data-variant="standard"] .katex {
+  font-size: var(--math-size-standard) !important;
+}
+
+.math-formula-row {
+  --math-font-size: var(--math-size-standard);
+  align-items: center;
+}
+
+.math-formula-row[data-variant="standard"] {
+  --math-font-size: var(--math-size-standard);
+}
+
+.math-formula-row .katex {
+  font-size: var(--math-font-size) !important;
+}
+
+/* Inline MathText tokens inside formula rows must follow the row size,
+   overriding the per-variant .math-render rules that outrank the row rule. */
+.math-formula-row .math-render[data-variant] .katex {
+  font-size: var(--math-font-size) !important;
+}
+
+/* Inline MathText tokens inside formula rows must follow the row size,
+   overriding the per-variant .math-render rules that outrank the row rule. */
+.math-formula-row .math-render[data-variant] .katex {
+  font-size: var(--math-font-size) !important;
+}
+
+.math-formula-row .polynomial-coefficient-input,
+.math-formula-row .root-inline-input {
+  min-height: calc(var(--math-font-size) * 1.6);
+  font-size: calc(var(--math-font-size) * 0.82);
+}
+
+.polynomial-coefficient-tooltip .math-render[data-variant] .katex {
+  font-size: 0.78rem !important;
 }
 
 .matrix-input {
@@ -929,9 +1017,8 @@ input[type="range"] {
 .equation-result-list .intro-equation {
   margin: 10px 0 0;
   overflow-x: auto;
-  font-size: clamp(1.18rem, 2.1vw, 1.55rem);
-  line-height: 1.6;
   white-space: nowrap;
+  text-align: center;
 }
 
 .solution-basis-card {
@@ -947,9 +1034,15 @@ input[type="range"] {
 .solution-basis-list .intro-equation {
   margin: 0;
   overflow-x: auto;
-  font-size: clamp(1.08rem, 1.9vw, 1.38rem);
-  line-height: 1.55;
   white-space: nowrap;
+  text-align: center;
+}
+
+.equation-result-panel .result-card > span {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .equation-practice-grid {
@@ -1069,7 +1162,7 @@ input[type="range"] {
 
 .stability-root-suffix {
   font-family: "Times New Roman", "STIX Two Text", serif;
-  font-size: clamp(1.08rem, 1.9vw, 1.38rem);
+  font-size: var(--math-size-compact);
   direction: ltr;
   unicode-bidi: isolate;
 }
@@ -1278,6 +1371,7 @@ input[type="range"] {
   justify-content: center;
   margin: 0.1rem 0;
   overflow-x: auto;
+  max-width: 100%;
 }
 
 .reconstruction-family-formula-scroll {
@@ -1300,6 +1394,76 @@ input[type="range"] {
   margin-top: 0.35rem;
   padding-top: 0.35rem;
   border-top: 1px solid var(--line);
+}
+
+.reconstruction-two-parameter-dual {
+  gap: 0.75rem;
+}
+
+.reconstruction-two-param-progress {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: right;
+  color: rgba(24, 52, 82, 0.85);
+}
+
+.reconstruction-two-param-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.reconstruction-two-param-tab {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(35, 87, 137, 0.22);
+  background: rgba(255, 255, 255, 0.72);
+  text-align: right;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.reconstruction-two-param-tab.is-active {
+  border-color: rgba(35, 87, 137, 0.55);
+  background: rgba(220, 233, 245, 0.75);
+}
+
+.reconstruction-two-param-tab:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.reconstruction-two-param-tab-title {
+  font-size: 0.96rem;
+  font-weight: 650;
+}
+
+.reconstruction-two-param-tab-status {
+  font-size: 0.86rem;
+  color: rgba(24, 52, 82, 0.72);
+}
+
+.reconstruction-two-param-panel {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reconstruction-two-param-rows {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.reconstruction-two-param-row {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.reconstruction-two-param-label {
+  font-weight: 650;
+  text-align: right;
 }
 
 .lambda-option-list {
@@ -1372,7 +1536,6 @@ input[type="range"] {
 .lambda-option-math {
   direction: ltr;
   unicode-bidi: isolate;
-  font-size: 0.98rem;
 }
 
 .initial-coefficient-grid {
@@ -1454,10 +1617,6 @@ input[type="range"] {
   text-align: center;
 }
 
-.initial-stage-math .math-render .katex {
-  font-size: clamp(1.08rem, 1.9vw, 1.38rem);
-}
-
 .initial-condition-list {
   direction: ltr;
   unicode-bidi: isolate;
@@ -1471,10 +1630,6 @@ input[type="range"] {
 .initial-condition-item {
   display: inline-flex;
   white-space: nowrap;
-}
-
-.initial-condition-item .math-render .katex {
-  font-size: clamp(1.08rem, 1.9vw, 1.38rem);
 }
 
 .initial-condition-basis-summary,
@@ -1587,7 +1742,8 @@ input[type="range"] {
   justify-content: center;
 }
 
-.polynomial-input-row {
+.polynomial-input-row,
+.math-formula-row.polynomial-input-row {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
@@ -1617,7 +1773,6 @@ input[type="range"] {
 
 .polynomial-coefficient-input {
   width: 3.5rem;
-  min-height: 36px;
   padding: 6px 8px;
   border: 1px solid rgba(37, 43, 51, 0.16);
   border-radius: 6px;
@@ -1666,7 +1821,8 @@ input[type="range"] {
   margin-bottom: 8px;
 }
 
-.root-expression-row {
+.root-expression-row,
+.math-formula-row.root-expression-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1680,10 +1836,10 @@ input[type="range"] {
 
 .root-inline-input {
   width: 4.5rem;
-  min-height: 36px;
   padding: 6px 8px;
   border: 1px solid rgba(37, 43, 51, 0.16);
   border-radius: 6px;
+  text-align: center;
 }
 
 .root-multiplicity-input {
@@ -1772,11 +1928,6 @@ input[type="range"] {
   justify-content: center;
   overflow-x: auto;
   overflow-y: hidden;
-  font-size: 1.2rem;
-}
-
-.basis-element-formula .math-render {
-  font-size: inherit;
 }
 
 .basis-element-actions {

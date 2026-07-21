@@ -237,6 +237,7 @@ export type ReconstructionCaseFilter =
   | "mixed"
   | "unique"
   | "one-real-parameter"
+  | "two-parameter"
   | "impossible";
 
 export type ReconstructionBehaviorCondition =
@@ -259,11 +260,32 @@ export type GivenSolutionExpression =
       }>;
     };
 
-export type ReconstructionOutcome = "unique" | "one-real-parameter" | "impossible";
+export type ReconstructionOutcome =
+  | "unique"
+  | "one-real-parameter"
+  | "two-parameter"
+  | "impossible";
 
 export type ReconstructionFeasibilityAnswer = "feasible" | "infeasible";
 
-export type ReconstructionDetermination = "unique" | "one-real-parameter";
+export type ReconstructionDetermination =
+  | "unique"
+  | "one-real-parameter"
+  | "two-parameter";
+
+export type RealPairDomain =
+  | "all-real-pairs"
+  | "non-positive-not-both-zero"
+  | "strictly-negative"
+  | "non-negative-not-both-zero"
+  | "strictly-positive";
+
+export type BetaConstraint = "all-real" | "nonzero" | "non-negative" | "positive";
+
+export type ComplexPairDomain = {
+  alphaConstraint: LambdaConstraint;
+  betaConstraint: "nonzero";
+};
 
 export type LambdaConstraint =
   | "all-real"

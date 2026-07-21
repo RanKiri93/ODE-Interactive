@@ -16,6 +16,7 @@ import {
 import type { EquationKind, RootRowDraft } from "../types";
 import { createId } from "../utils/id";
 import { formatNumber } from "../utils/formatting";
+import { DisplayMath } from "./DisplayMath";
 import { MathText } from "./MathText";
 import { RootGroupEditor } from "./RootGroupEditor";
 
@@ -153,14 +154,14 @@ export function EquationAssemblerActivity() {
               <section className="result-card primary">
                 <span>הפולינום האופייני</span>
                 <p className="intro-equation">
-                  <MathText math={`p(r)=${assembled.polynomialLatex}`} />
+                  <DisplayMath latex={`p(r)=${assembled.polynomialLatex}`} />
                 </p>
               </section>
               <section className="result-card">
                 <span>המשוואה המתקבלת</span>
                 <p className="intro-equation">
-                  <MathText
-                    math={
+                  <DisplayMath
+                    latex={
                       equationKind === "constant-coefficients"
                         ? assembled.constantCoefficientEquation
                         : assembled.eulerEquation
@@ -176,7 +177,7 @@ export function EquationAssemblerActivity() {
                     : assembled.eulerBasis
                   ).map((solution, index) => (
                     <p className="intro-equation" key={`${solution}-${index}`}>
-                      <MathText math={`y_{${index + 1}}(x)=${solution}`} />
+                      <DisplayMath latex={`y_{${index + 1}}(x)=${solution}`} />
                     </p>
                   ))}
                 </div>
@@ -215,7 +216,7 @@ export function EquationAssemblerActivity() {
                 {assembled.characteristicPolynomial.map((coefficient, index) => (
                   <div key={`power-${index}`}>
                     <span>
-                      <MathText math={`a_{${index}}`} />
+                      <MathText size="compact" math={`a_{${index}}`} />
                     </span>
                     <strong>{formatNumber(coefficient)}</strong>
                   </div>
@@ -229,7 +230,7 @@ export function EquationAssemblerActivity() {
                   {assembled.eulerCoefficients.map((coefficient, index) => (
                     <div key={`euler-${index}`}>
                       <span>
-                        <MathText math={`b_{${index}}`} />
+                        <MathText size="compact" math={`b_{${index}}`} />
                       </span>
                       <strong>{formatNumber(coefficient)}</strong>
                     </div>

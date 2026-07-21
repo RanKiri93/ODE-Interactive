@@ -1,5 +1,6 @@
 import { computeRootDisplayIndices } from "../practice/rootDisplay";
 import type { RootGroupDraft } from "../types";
+import { formulaRowClassName } from "../math/mathTypography";
 import { MathText } from "./MathText";
 
 type PracticeRootGroupEditorProps = {
@@ -64,7 +65,7 @@ export function PracticeRootGroupEditor({
                 </button>
               </div>
 
-              <div className="root-expression-row" dir="ltr">
+              <div className={formulaRowClassName("root-expression-row")} data-variant="standard" dir="ltr">
                 {row.kind === "real" ? (
                   <>
                     <span className="root-expression-label">

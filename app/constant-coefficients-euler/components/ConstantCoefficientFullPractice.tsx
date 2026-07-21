@@ -60,6 +60,7 @@ import type {
 } from "../types";
 import { createId } from "../utils/id";
 import { ConstantBasisComposer } from "./ConstantBasisComposer";
+import { DisplayMath } from "./DisplayMath";
 import { MathText } from "./MathText";
 import { PolynomialCoefficientEditor } from "./PolynomialCoefficientEditor";
 import { PracticeRootGroupEditor, RootStageHints } from "./PracticeRootGroupEditor";
@@ -677,7 +678,7 @@ export function ConstantCoefficientFullPractice() {
             פתרו את המשוואה ב{describePracticeFlow(activeIncludeInitialConditions, activeIncludeStability)}.
           </p>
           <p className="intro-equation">
-            <MathText math={question.equationLatex} />
+            <DisplayMath latex={question.equationLatex} />
           </p>
         </div>
 
@@ -692,19 +693,19 @@ export function ConstantCoefficientFullPractice() {
             </strong>
             <div className="full-practice-summary">
               <p className="intro-equation">
-                <MathText math={`p(r)=${question.polynomialLatex}`} />
+                <MathText block math={`p(r)=${question.polynomialLatex}`} />
               </p>
               <ul>
                 {question.roots.map((group, index) => (
                   <li key={`summary-root-${index}`}>
-                    <MathText math={formatRootGroupHint(group)} />
+                    <MathText size="compact" math={formatRootGroupHint(group)} />
                   </li>
                 ))}
               </ul>
               <div className="solution-basis-list">
                 {question.expectedBasisLatex.map((solution, index) => (
                   <p className="intro-equation" key={`summary-basis-${index}`}>
-                    <MathText math={`y_{${index + 1}}(x)=${solution}`} />
+                    <MathText block math={`y_{${index + 1}}(x)=${solution}`} />
                   </p>
                 ))}
               </div>

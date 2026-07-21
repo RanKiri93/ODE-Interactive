@@ -187,7 +187,7 @@ export function ConstantBasisComposer({
 
         <div className="basis-brace-display-scroll">
           <p className="intro-equation basis-brace-display" dir="ltr">
-            <MathText math={basisLatex} />
+            <MathText block math={basisLatex} />
           </p>
         </div>
       </div>
@@ -198,7 +198,7 @@ export function ConstantBasisComposer({
             <li key={entry.id} className="basis-element-grid-item">
               <div className="basis-element-card">
                 <div className="basis-element-formula">
-                  <MathText math={formatBasisTokenPreview(entry.token, resolvedContext)} />
+                  <MathText size="compact" math={formatBasisTokenPreview(entry.token, resolvedContext)} />
                 </div>
 
                 <div className="basis-element-actions">

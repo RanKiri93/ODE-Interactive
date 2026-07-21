@@ -1,7 +1,6 @@
 import { EPS } from "../constants";
 import type { SolutionRootGroup } from "../types";
-import { formatNormalizedEquationLatex, formatPolynomialLatexFromCoefficients } from "./algebraicFormatting";
-import { formatNumber } from "../utils/formatting";
+import { formatNormalizedEquationLatex, formatPolynomialLatexFromCoefficients, formatNumericSquare, formatShiftedVariable } from "./algebraicFormatting";
 
 /**
  * Coefficients are stored in ascending power order:
@@ -85,12 +84,16 @@ export function formatTransformedConstantCoefficientEquation(coefficients: numbe
 }
 
 function formatRealRootFactor(real: number, multiplicity: number): string {
-  const body = `(r-${formatNumber(real)})`;
+  const shifted = formatShiftedVariable("r", real);
+  const body = shifted === "r" ? "r" : `(${shifted})`;
   return multiplicity > 1 ? `${body}^{${multiplicity}}` : body;
 }
 
 function formatComplexRootFactor(real: number, imagAbs: number, multiplicity: number): string {
-  const body = `\\left((r-${formatNumber(real)})^2+${formatNumber(imagAbs)}^2\\right)`;
+  const shifted = formatShiftedVariable("r", real);
+  const betaSquare = formatNumericSquare(imagAbs);
+  const quadratic = shifted === "r" ? `r^2+${betaSquare}` : `(${shifted})^2+${betaSquare}`;
+  const body = shifted === "r" ? quadratic : `\\left(${quadratic}\\right)`;
   return multiplicity > 1 ? `${body}^{${multiplicity}}` : body;
 }
 

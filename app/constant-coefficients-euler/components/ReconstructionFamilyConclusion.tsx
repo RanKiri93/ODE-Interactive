@@ -84,20 +84,22 @@ export function ReconstructionFamilyConclusion({
         מן הפתרונות הנתונים נקבע כבר הגורם הבא של הפולינום האופייני המנורמל:
       </p>
       <div className="reconstruction-family-formula">
-        <MathText math={`q(r)=${forcedPolyLatex}`} />
+        <MathText block math={`q(r)=${forcedPolyLatex}`} />
       </div>
       <p className="reconstruction-family-text">
         מאחר שנותרה מעלה אחת בלבד, נותר שורש ממשי חופשי אחד. נסמן אותו ב-
         <MathText math={"\\lambda"} />. לכן:
       </p>
       <div className="reconstruction-family-formula reconstruction-family-formula-scroll">
-        <MathText math={factoredFamilyLatex} />
+        <MathText block math={factoredFamilyLatex} />
       </div>
       <div className="reconstruction-family-formula">
-        <MathText math={expandedFamilyLatex} />
+        <MathText block math={expandedFamilyLatex} />
       </div>
       <div className="reconstruction-family-formula">
         <MathText
+          size="standard"
+          block
           math={
             question.equationKind === "constant-coefficients"
               ? formatAffineConstantCoefficientEquation(analysis.equationFamily)
@@ -136,10 +138,12 @@ export function ReconstructionFamilyConclusion({
       {showSummary ? (
         <div className="reconstruction-summary reconstruction-family-summary">
           <p className="intro-equation">
-            <MathText math={formatLambdaConstraintLatex(analysis.lambdaConstraint)} />
+            <MathText block math={formatLambdaConstraintLatex(analysis.lambdaConstraint)} />
           </p>
           <p className="intro-equation">
             <MathText
+              size="standard"
+              block
               math={
                 question.equationKind === "constant-coefficients"
                   ? formatAffineConstantCoefficientEquation(analysis.equationFamily)

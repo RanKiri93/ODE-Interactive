@@ -50,9 +50,7 @@ export function collectSolutionRootGroups(rows: RootRowDraft[]): SolutionRootGro
 
     const key = `${formatNumber(row.real)}|${formatNumber(Math.abs(row.imag))}`;
     const group = complexGroups.get(key) ?? { real: row.real, imagAbs: Math.abs(row.imag), multiplicity: 0 };
-    if (row.imag > 0) {
-      group.multiplicity += row.multiplicity;
-    }
+    group.multiplicity += row.multiplicity;
     complexGroups.set(key, group);
   }
 

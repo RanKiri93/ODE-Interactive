@@ -8,13 +8,15 @@ import {
   MIN_PRACTICE_DEGREE,
   reconstructionCaseFilterLabels,
 } from "../constants";
-import { formatPolynomialLatex } from "../math/polynomial";
+import { formatPolynomialLatex, formatFactoredPolynomialLatex } from "../math/polynomial";
 import { rootGroupsDegree } from "../math/reconstruction";
 import {
+  evaluateComplexPairDomainAnswer,
   evaluateFeasibilityAnswer,
   evaluateImpossibleReasonAnswer,
   evaluateLambdaConstraintAnswer,
   evaluateOutcomeAnswer,
+  evaluateRealPairDomainAnswer,
   evaluateUniqueEquationPair,
   expectedFeasibilityFromAnalysis,
 } from "../practice/reconstructionEvaluation";
@@ -42,11 +44,13 @@ import {
   recordQuestionStarted,
 } from "../practice/stats";
 import type {
+  BetaConstraint,
   CoefficientFieldStatus,
   Difficulty,
   EquationKind,
   LambdaConstraint,
   PolynomialEvaluationResult,
+  RealPairDomain,
   ReconstructionCaseFilter,
   ReconstructionDetermination,
   ReconstructionExerciseState,
@@ -54,6 +58,7 @@ import type {
   ReconstructionImpossibleReason,
   RootComparisonResult,
   RootGroupDraft,
+  StageStatus,
 } from "../types";
 import { createId } from "../utils/id";
 import { formatConstantCoefficientEquation, formatEulerEquation } from "../math/polynomial";
@@ -70,14 +75,53 @@ import {
   ReconstructionImpossibleReasonInput,
 } from "./ReconstructionInputs";
 import { ReconstructionFamilyConclusion } from "./ReconstructionFamilyConclusion";
+import {
+  ReconstructionTwoParameterConclusion,
+  type TwoParameterActivePart,
+} from "./ReconstructionTwoParameterConclusion";
 import { StepCard } from "./StepCard";
 
-function usesNormalizedOrder2Input(equationKind: EquationKind, order: number): boolean {
-  return equationKind === "constant-coefficients" && order === 2;
+function isTwoParameterBranchResolved(status: StageStatus): boolean {
+  return status === "correct" || status === "revealed";
+}
+
+function deriveTwoParameterConclusionStatus(
+  realBranchStatus: StageStatus,
+  complexBranchStatus: StageStatus,
+): StageStatus {
+  if (realBranchStatus === "correct" && complexBranchStatus === "correct") {
+    return "correct";
+  }
+  if (
+    isTwoParameterBranchResolved(realBranchStatus) &&
+    isTwoParameterBranchResolved(complexBranchStatus)
+  ) {
+    return "revealed";
+  }
+  if (realBranchStatus === "incorrect" || complexBranchStatus === "incorrect") {
+    return "incorrect";
+  }
+  return "unanswered";
+}
+
+function usesNormalizedTrailingInput(equationKind: EquationKind, order: number): boolean {
+  return equationKind === "constant-coefficients" && (order === 2 || order === 3);
+}
+
+function uniqueConclusionUsesPolynomialOnly(equationKind: EquationKind, order: number): boolean {
+  return equationKind === "constant-coefficients" && order === 3;
+}
+
+function order3CaseFilterOptions(): ReconstructionCaseFilter[] {
+  return ["mixed", "unique", "one-real-parameter", "two-parameter", "impossible"];
+}
+
+function defaultCaseFilterOptions(): ReconstructionCaseFilter[] {
+  return ["mixed", "unique", "one-real-parameter", "impossible"];
 }
 
 function defaultConclusionCoefficientDraft(equationKind: EquationKind, order: number): string[] {
-  return usesNormalizedOrder2Input(equationKind, order)
+  return usesNormalizedTrailingInput(equationKind, order)
     ? defaultNormalizedTrailingDraft(order)
     : defaultPolynomialDraft(order);
 }
@@ -88,6 +132,12 @@ function resetAnswerState(equationKind: EquationKind, order: number) {
     rootRows: defaultRootGroupDrafts(1),
     determination: null as ReconstructionDetermination | null,
     lambdaConstraint: null as LambdaConstraint | null,
+    activeTwoParameterPart: "real" as TwoParameterActivePart,
+    realPairDomain: null as RealPairDomain | null,
+    complexAlphaConstraint: null as LambdaConstraint | null,
+    complexBetaConstraint: null as BetaConstraint | null,
+    realBranchStatus: "unanswered" as StageStatus,
+    complexBranchStatus: "unanswered" as StageStatus,
     impossibleReason: null as ReconstructionImpossibleReason | null,
     polyCoeffs: defaultConclusionCoefficientDraft(equationKind, order),
     equationCoeffs: defaultConclusionCoefficientDraft(equationKind, order),
@@ -99,6 +149,8 @@ function resetAnswerState(equationKind: EquationKind, order: number) {
     polyResult: null as PolynomialEvaluationResult | null,
     equationResult: null as PolynomialEvaluationResult | null,
     conclusionResult: null as { isCorrect: boolean; message: string } | null,
+    realBranchResult: null as { isCorrect: boolean; message: string } | null,
+    complexBranchResult: null as { isCorrect: boolean; message: string } | null,
   };
 }
 
@@ -129,6 +181,12 @@ export function EquationReconstructionPractice() {
   const [rootRows, setRootRows] = useState<RootGroupDraft[]>(() => defaultRootGroupDrafts(1));
   const [determination, setDetermination] = useState<ReconstructionDetermination | null>(null);
   const [lambdaConstraint, setLambdaConstraint] = useState<LambdaConstraint | null>(null);
+  const [activeTwoParameterPart, setActiveTwoParameterPart] = useState<TwoParameterActivePart>("real");
+  const [realPairDomain, setRealPairDomain] = useState<RealPairDomain | null>(null);
+  const [complexAlphaConstraint, setComplexAlphaConstraint] = useState<LambdaConstraint | null>(null);
+  const [complexBetaConstraint, setComplexBetaConstraint] = useState<BetaConstraint | null>(null);
+  const [realBranchStatus, setRealBranchStatus] = useState<StageStatus>("unanswered");
+  const [complexBranchStatus, setComplexBranchStatus] = useState<StageStatus>("unanswered");
   const [impossibleReason, setImpossibleReason] = useState<ReconstructionImpossibleReason | null>(null);
   const [polyCoeffs, setPolyCoeffs] = useState(() => defaultPolynomialDraft(MIN_PRACTICE_DEGREE));
   const [equationCoeffs, setEquationCoeffs] = useState(() => defaultPolynomialDraft(MIN_PRACTICE_DEGREE));
@@ -146,6 +204,10 @@ export function EquationReconstructionPractice() {
   const [polyResult, setPolyResult] = useState<PolynomialEvaluationResult | null>(null);
   const [equationResult, setEquationResult] = useState<PolynomialEvaluationResult | null>(null);
   const [conclusionResult, setConclusionResult] = useState<{ isCorrect: boolean; message: string } | null>(null);
+  const [realBranchResult, setRealBranchResult] = useState<{ isCorrect: boolean; message: string } | null>(null);
+  const [complexBranchResult, setComplexBranchResult] = useState<{ isCorrect: boolean; message: string } | null>(
+    null,
+  );
 
   const initialStartedRef = useRef(false);
 
@@ -175,6 +237,7 @@ export function EquationReconstructionPractice() {
   const showInfeasibilityReasonStage =
     feasibilityAnswer === "infeasible" && exercise.infeasibilityReasonEverUnlocked;
   const showFeasibleStages = feasibilityAnswer === "feasible" && exercise.forcedRootsEverUnlocked;
+  const showConclusionStage = showFeasibleStages;
 
   const cancelCompletion = () => ({
     completed: false,
@@ -260,16 +323,71 @@ export function EquationReconstructionPractice() {
   };
 
   const invalidateFromDeterminationEdit = () => {
+    setActiveTwoParameterPart("real");
+    setRealPairDomain(null);
+    setComplexAlphaConstraint(null);
+    setComplexBetaConstraint(null);
+    setRealBranchStatus("unanswered");
+    setComplexBranchStatus("unanswered");
+    setRealBranchResult(null);
+    setComplexBranchResult(null);
     setExercise((current) => ({
       ...current,
       outcomeStatus: "unanswered",
-      conclusionStatus: current.conclusionEverUnlocked ? "unanswered" : "locked",
+      conclusionEverUnlocked: false,
+      conclusionStatus: "locked",
       ...cancelCompletion(),
     }));
     setDeterminationResult(null);
     setPolyResult(null);
     setEquationResult(null);
     setConclusionResult(null);
+  };
+
+  const invalidateFromRealBranchEdit = () => {
+    if (isTwoParameterBranchResolved(realBranchStatus)) {
+      return;
+    }
+    setRealBranchStatus("unanswered");
+    setRealBranchResult(null);
+    setExercise((current) => ({
+      ...current,
+      conclusionStatus: deriveTwoParameterConclusionStatus("unanswered", complexBranchStatus),
+      ...cancelCompletion(),
+    }));
+  };
+
+  const invalidateFromComplexBranchEdit = () => {
+    if (isTwoParameterBranchResolved(complexBranchStatus)) {
+      return;
+    }
+    setComplexBranchStatus("unanswered");
+    setComplexBranchResult(null);
+    setExercise((current) => ({
+      ...current,
+      conclusionStatus: deriveTwoParameterConclusionStatus(realBranchStatus, "unanswered"),
+      ...cancelCompletion(),
+    }));
+  };
+
+  const tryCompleteTwoParameterExercise = (
+    nextRealStatus: StageStatus,
+    nextComplexStatus: StageStatus,
+    assisted: boolean,
+  ) => {
+    const nextConclusionStatus = deriveTwoParameterConclusionStatus(nextRealStatus, nextComplexStatus);
+    setExercise((current) => ({
+      ...current,
+      conclusionStatus: nextConclusionStatus,
+    }));
+    if (
+      isTwoParameterBranchResolved(nextRealStatus) &&
+      isTwoParameterBranchResolved(nextComplexStatus) &&
+      !exercise.completed
+    ) {
+      const bothCorrect = nextRealStatus === "correct" && nextComplexStatus === "correct";
+      applyCompletion(assisted || !bothCorrect);
+    }
   };
 
   const invalidateFromConclusionEdit = () => {
@@ -343,6 +461,12 @@ export function EquationReconstructionPractice() {
     setRootRows(reset.rootRows);
     setDetermination(reset.determination);
     setLambdaConstraint(reset.lambdaConstraint);
+    setActiveTwoParameterPart(reset.activeTwoParameterPart);
+    setRealPairDomain(reset.realPairDomain);
+    setComplexAlphaConstraint(reset.complexAlphaConstraint);
+    setComplexBetaConstraint(reset.complexBetaConstraint);
+    setRealBranchStatus(reset.realBranchStatus);
+    setComplexBranchStatus(reset.complexBranchStatus);
     setImpossibleReason(reset.impossibleReason);
     setPolyCoeffs(reset.polyCoeffs);
     setEquationCoeffs(reset.equationCoeffs);
@@ -354,6 +478,8 @@ export function EquationReconstructionPractice() {
     setPolyResult(reset.polyResult);
     setEquationResult(reset.equationResult);
     setConclusionResult(reset.conclusionResult);
+    setRealBranchResult(reset.realBranchResult);
+    setComplexBranchResult(reset.complexBranchResult);
   };
 
   const beginQuestion = ({
@@ -374,10 +500,12 @@ export function EquationReconstructionPractice() {
     if (abandonIncomplete && !exercise.completed) {
       setStats((current) => recordAbandonedQuestion(current));
     }
+    const resolvedCaseFilter =
+      nextOrder !== 3 && nextCaseFilter === "two-parameter" ? "mixed" : nextCaseFilter;
     setOrder(nextOrder);
     setDifficulty(nextDifficulty);
     setEquationKind(nextEquationKind);
-    setCaseFilter(nextCaseFilter);
+    setCaseFilter(resolvedCaseFilter);
     setSeed((current) => current + seedStep);
     clearAnswerOnly(nextOrder);
     setStats((current) => recordQuestionStarted(current));
@@ -520,7 +648,9 @@ export function EquationReconstructionPractice() {
       message:
         expectedDetermination === "unique"
           ? "נכון. מתקבלת משוואה מנורמלת יחידה."
-          : "נכון. מתקבלת משפחה חד־פרמטרית של משוואות מנורמלות.",
+          : expectedDetermination === "one-real-parameter"
+            ? "נכון. מתקבלת משפחה חד־פרמטרית של משוואות מנורמלות."
+            : "נכון. מתקבלת משפחה דו־פרמטרית של משוואות מנורמלות.",
     });
     setExercise((current) => ({
       ...current,
@@ -530,17 +660,112 @@ export function EquationReconstructionPractice() {
     unlockConclusionStage();
   };
 
-  const normalizedOrder2Input = usesNormalizedOrder2Input(equationKind, order);
+  const checkRealBranch = () => {
+    if (
+      exercise.completed ||
+      conclusionLocked ||
+      question.analysis.kind !== "two-parameter"
+    ) {
+      return;
+    }
+    const result = evaluateRealPairDomainAnswer(
+      realPairDomain,
+      question.analysis.realPairDomain,
+    );
+    setRealBranchResult(result);
+    const nextRealStatus: StageStatus = result.isCorrect ? "correct" : "incorrect";
+    setRealBranchStatus(nextRealStatus);
+    tryCompleteTwoParameterExercise(nextRealStatus, complexBranchStatus, exercise.usedReveal);
+  };
+
+  const checkComplexBranch = () => {
+    if (
+      exercise.completed ||
+      conclusionLocked ||
+      question.analysis.kind !== "two-parameter"
+    ) {
+      return;
+    }
+    const result = evaluateComplexPairDomainAnswer(
+      {
+        alphaConstraint: complexAlphaConstraint,
+        betaConstraint: complexBetaConstraint,
+      },
+      question.analysis.complexPairDomain,
+    );
+    setComplexBranchResult(result);
+    const nextComplexStatus: StageStatus = result.isCorrect ? "correct" : "incorrect";
+    setComplexBranchStatus(nextComplexStatus);
+    tryCompleteTwoParameterExercise(realBranchStatus, nextComplexStatus, exercise.usedReveal);
+  };
+
+  const revealRealBranch = () => {
+    if (question.analysis.kind !== "two-parameter") {
+      return;
+    }
+    setRealPairDomain(question.analysis.realPairDomain);
+    setRealBranchResult({
+      isCorrect: true,
+      message: "real-pair-domain-correct",
+    });
+    setRealBranchStatus("revealed");
+    setExercise((current) => ({ ...current, usedReveal: true }));
+    tryCompleteTwoParameterExercise("revealed", complexBranchStatus, true);
+  };
+
+  const revealComplexBranch = () => {
+    if (question.analysis.kind !== "two-parameter") {
+      return;
+    }
+    setComplexAlphaConstraint(question.analysis.complexPairDomain.alphaConstraint);
+    setComplexBetaConstraint("nonzero");
+    setComplexBranchResult({
+      isCorrect: true,
+      message: "complex-pair-domain-correct",
+    });
+    setComplexBranchStatus("revealed");
+    setExercise((current) => ({ ...current, usedReveal: true }));
+    tryCompleteTwoParameterExercise(realBranchStatus, "revealed", true);
+  };
+
+  const normalizedTrailingInput = usesNormalizedTrailingInput(equationKind, order);
+  const polynomialOnlyUnique = uniqueConclusionUsesPolynomialOnly(equationKind, order);
 
   const checkConclusion = () => {
     if (exercise.completed || conclusionLocked || question.analysis.kind === "impossible") {
       return;
     }
 
+    if (question.analysis.kind === "two-parameter") {
+      return;
+    }
+
     if (question.analysis.kind === "unique") {
-      const evaluate = normalizedOrder2Input
+      const evaluate = normalizedTrailingInput
         ? evaluateNormalizedPolynomialAnswer
         : evaluatePolynomialAnswer;
+
+      if (polynomialOnlyUnique) {
+        const polyEval = evaluate(polyCoeffs, question.analysis.polynomialCoefficients);
+        setPolyResult(polyEval);
+        setEquationResult(null);
+        if (polyEval.isCorrect) {
+          setConclusionResult({
+            isCorrect: true,
+            message: "הפולינום האופייני המנורמל נכון.",
+          });
+          setExercise((current) => ({ ...current, conclusionStatus: "correct" }));
+          applyCompletion(exercise.usedReveal);
+        } else {
+          setConclusionResult({
+            isCorrect: false,
+            message: "הפולינום האופייני המנורמל אינו נכון.",
+          });
+          setExercise((current) => ({ ...current, conclusionStatus: "incorrect" }));
+        }
+        return;
+      }
+
       const polyEval = evaluate(polyCoeffs, question.analysis.polynomialCoefficients);
       const eqEval = evaluate(equationCoeffs, question.analysis.equationCoefficients);
       setPolyResult(polyEval);
@@ -581,21 +806,39 @@ export function EquationReconstructionPractice() {
 
   const revealConclusion = () => {
     if (question.analysis.kind === "unique") {
-      if (normalizedOrder2Input) {
+      if (normalizedTrailingInput) {
         setPolyCoeffs(
           normalizedTrailingDraftFromCoefficients(question.analysis.polynomialCoefficients),
         );
-        setEquationCoeffs(
-          normalizedTrailingDraftFromCoefficients(question.analysis.equationCoefficients),
-        );
+        if (!polynomialOnlyUnique) {
+          setEquationCoeffs(
+            normalizedTrailingDraftFromCoefficients(question.analysis.equationCoefficients),
+          );
+        }
       } else {
         setPolyCoeffs(polynomialDraftFromCoefficients(question.analysis.polynomialCoefficients));
-        setEquationCoeffs(
-          polynomialDraftFromCoefficients(question.analysis.equationCoefficients),
-        );
+        if (!polynomialOnlyUnique) {
+          setEquationCoeffs(
+            polynomialDraftFromCoefficients(question.analysis.equationCoefficients),
+          );
+        }
       }
     } else if (question.analysis.kind === "one-real-parameter") {
       setLambdaConstraint(question.analysis.lambdaConstraint);
+    } else if (question.analysis.kind === "two-parameter") {
+      setRealPairDomain(question.analysis.realPairDomain);
+      setComplexAlphaConstraint(question.analysis.complexPairDomain.alphaConstraint);
+      setComplexBetaConstraint("nonzero");
+      setRealBranchStatus("revealed");
+      setComplexBranchStatus("revealed");
+      setRealBranchResult({
+        isCorrect: true,
+        message: "real-pair-domain-correct",
+      });
+      setComplexBranchResult({
+        isCorrect: true,
+        message: "complex-pair-domain-correct",
+      });
     }
     setExercise((current) => ({
       ...current,
@@ -614,66 +857,75 @@ export function EquationReconstructionPractice() {
 
   const renderConclusionStage = () => {
     if (question.analysis.kind === "unique") {
+      const factoredLatex = formatFactoredPolynomialLatex(question.expectedForcedRoots);
       return (
         <>
           <p className="activity-hint">
             השורשים המוכרחים ממלאים את כל סדר המשוואה. לכן מתקבלת משוואה מנורמלת יחידה.
           </p>
           <p className="activity-hint">
-            הפולינום האופייני המנורמל הוא:{" "}
-            <MathText
-              math={`p(r)=${formatPolynomialLatex(question.analysis.polynomialCoefficients, "r")}`}
-            />
+            הפולינום האופייני המנורמל בצורה מכפלת:{" "}
+            <MathText block math={`p(r)=${factoredLatex}`} />
           </p>
-          <p className="activity-hint">מהי המשוואה המנורמלת המתאימה לפולינום זה?</p>
+          <p className="activity-hint">
+            {polynomialOnlyUnique
+              ? "הזינו את המקדמים של הפולינום האופייני המנורמל:"
+              : "מהי המשוואה המנורמלת המתאימה לפולינום זה?"}
+          </p>
           <PolynomialCoefficientEditor
             degree={order}
             coefficients={polyCoeffs}
             fieldStatuses={polyFieldStatuses}
             disabled={exercise.completed}
-            hideLeadingCoefficient={normalizedOrder2Input}
+            hideLeadingCoefficient={normalizedTrailingInput}
             onChange={(index, value) => {
               setPolyCoeffs((current) => current.map((item, idx) => (idx === index ? value : item)));
               invalidateFromConclusionEdit();
             }}
           />
-          <p className="activity-hint">המשוואה המנורמלת:</p>
-          {question.equationKind === "constant-coefficients" ? (
-            <DifferentialEquationCoefficientEditor
-              degree={order}
-              coefficients={equationCoeffs}
-              fieldStatuses={equationFieldStatuses}
-              dependentVariable="y"
-              disabled={exercise.completed}
-              hideLeadingCoefficient={normalizedOrder2Input}
-              onChange={(index, value) => {
-                setEquationCoeffs((current) =>
-                  current.map((item, idx) => (idx === index ? value : item)),
-                );
-                invalidateFromConclusionEdit();
-              }}
-            />
-          ) : (
-            <EulerCoefficientEditor
-              degree={order}
-              coefficients={equationCoeffs}
-              fieldStatuses={equationFieldStatuses}
-              disabled={exercise.completed}
-              onChange={(index, value) => {
-                setEquationCoeffs((current) => current.map((item, idx) => (idx === index ? value : item)));
-                invalidateFromConclusionEdit();
-              }}
-            />
-          )}
+          {!polynomialOnlyUnique ? (
+            <>
+              <p className="activity-hint">המשוואה המנורמלת:</p>
+              {question.equationKind === "constant-coefficients" ? (
+                <DifferentialEquationCoefficientEditor
+                  degree={order}
+                  coefficients={equationCoeffs}
+                  fieldStatuses={equationFieldStatuses}
+                  dependentVariable="y"
+                  disabled={exercise.completed}
+                  hideLeadingCoefficient={normalizedTrailingInput}
+                  onChange={(index, value) => {
+                    setEquationCoeffs((current) =>
+                      current.map((item, idx) => (idx === index ? value : item)),
+                    );
+                    invalidateFromConclusionEdit();
+                  }}
+                />
+              ) : (
+                <EulerCoefficientEditor
+                  degree={order}
+                  coefficients={equationCoeffs}
+                  fieldStatuses={equationFieldStatuses}
+                  disabled={exercise.completed}
+                  onChange={(index, value) => {
+                    setEquationCoeffs((current) => current.map((item, idx) => (idx === index ? value : item)));
+                    invalidateFromConclusionEdit();
+                  }}
+                />
+              )}
+            </>
+          ) : null}
           {exercise.conclusionStatus === "revealed" || conclusionResult?.isCorrect ? (
             <div className="reconstruction-summary">
               <p className="intro-equation">
                 הפולינום האופייני המנורמל הוא:{" "}
-                <MathText math={`p(r)=${formatPolynomialLatex(question.analysis.polynomialCoefficients, "r")}`} />
+                <MathText block math={`p(r)=${formatPolynomialLatex(question.analysis.polynomialCoefficients, "r")}`} />
               </p>
               <p className="intro-equation">
                 המשוואה המנורמלת היא:{" "}
                 <MathText
+                  size="standard"
+                  block
                   math={
                     question.equationKind === "constant-coefficients"
                       ? formatConstantCoefficientEquation(question.analysis.equationCoefficients)
@@ -702,12 +954,51 @@ export function EquationReconstructionPractice() {
       );
     }
 
+    if (question.analysis.kind === "two-parameter") {
+      return (
+        <ReconstructionTwoParameterConclusion
+          question={question}
+          activePart={activeTwoParameterPart}
+          realPairDomain={realPairDomain}
+          complexAlphaConstraint={complexAlphaConstraint}
+          complexBetaConstraint={complexBetaConstraint}
+          realBranchStatus={realBranchStatus}
+          complexBranchStatus={complexBranchStatus}
+          realBranchResult={realBranchResult}
+          complexBranchResult={complexBranchResult}
+          disabled={exercise.completed}
+          onActivePartChange={setActiveTwoParameterPart}
+          onRealPairDomainChange={(value) => {
+            setRealPairDomain(value);
+            invalidateFromRealBranchEdit();
+          }}
+          onComplexAlphaChange={(value) => {
+            setComplexAlphaConstraint(value);
+            invalidateFromComplexBranchEdit();
+          }}
+          onComplexBetaChange={(value) => {
+            setComplexBetaConstraint(value);
+            invalidateFromComplexBranchEdit();
+          }}
+          onCheckRealBranch={checkRealBranch}
+          onCheckComplexBranch={checkComplexBranch}
+          onRevealRealBranch={revealRealBranch}
+          onRevealComplexBranch={revealComplexBranch}
+        />
+      );
+    }
+
     return null;
   };
 
   const forcedRootsStepNumber = showInfeasibilityReasonStage ? 3 : 2;
   const determinationStepNumber = forcedRootsStepNumber + 1;
   const reconstructionStepNumber = determinationStepNumber + 1;
+  const isTwoParameterQuestion = question.analysis.kind === "two-parameter";
+  const conclusionStepTitle = isTwoParameterQuestion
+    ? "שתי צורות ההשלמה האפשריות"
+    : "שחזור המשוואה";
+  const caseFilterOptions = order === 3 ? order3CaseFilterOptions() : defaultCaseFilterOptions();
 
   return (
     <section className="practice-grid equation-practice-grid full-practice-grid" aria-label="תרגול שחזור משוואה">
@@ -774,7 +1065,7 @@ export function EquationReconstructionPractice() {
         <section className="panel-section">
           <div className="section-heading">סוג שאלה</div>
           <div className="segmented-control reconstruction-case-filter">
-            {(Object.keys(reconstructionCaseFilterLabels) as ReconstructionCaseFilter[]).map((option) => (
+            {caseFilterOptions.map((option) => (
               <button
                 key={option}
                 className={caseFilter === option ? "selected" : ""}
@@ -1003,10 +1294,13 @@ export function EquationReconstructionPractice() {
               locked={determinationLocked}
             >
               <p className="activity-hint">
-                האם הנתונים קובעים משוואה מנורמלת יחידה, או שנותר שורש ממשי חופשי אחד?
+                {order === 3
+                  ? "האם הנתונים קובעים משוואה מנורמלת יחידה, משפחה חד־פרמטרית, או משפחה דו־פרמטרית?"
+                  : "האם הנתונים קובעים משוואה מנורמלת יחידה, או שנותר שורש ממשי חופשי אחד?"}
               </p>
               <ReconstructionDeterminationInput
                 value={determination}
+                order={order}
                 disabled={exercise.completed || determinationLocked}
                 onChange={(value) => {
                   setDetermination(value);
@@ -1044,15 +1338,15 @@ export function EquationReconstructionPractice() {
             </StepCard>
           ) : null}
 
-          {showFeasibleStages ? (
+          {showConclusionStage ? (
             <StepCard
               stepNumber={reconstructionStepNumber}
-              title="שחזור המשוואה"
+              title={conclusionStepTitle}
               status={exercise.conclusionStatus}
               locked={conclusionLocked}
             >
               {renderConclusionStage()}
-              {conclusionResult && !conclusionResult.isCorrect ? (
+              {!isTwoParameterQuestion && conclusionResult && !conclusionResult.isCorrect ? (
                 conclusionResult.message === "zero-collision-incorrect" ? (
                   <p className="stage-feedback">
                     התנאי שבחרתם אינו מתאים לנתון על התנהגות הפתרונות. שימו לב: אם{" "}
@@ -1063,7 +1357,7 @@ export function EquationReconstructionPractice() {
                   <p className="stage-feedback">{conclusionResult.message}</p>
                 )
               ) : null}
-              {conclusionResult?.isCorrect ? (
+              {!isTwoParameterQuestion && conclusionResult?.isCorrect ? (
                 question.analysis.kind === "one-real-parameter" &&
                 conclusionResult.message === "lambda-constraint-correct" ? (
                   <p className="stage-success">
@@ -1073,24 +1367,26 @@ export function EquationReconstructionPractice() {
                   <p className="stage-success">{conclusionResult.message}</p>
                 )
               ) : null}
-              <div className="practice-actions">
-                <button
-                  type="button"
-                  className="panel-action"
-                  disabled={exercise.completed || conclusionLocked}
-                  onClick={checkConclusion}
-                >
-                  בדיקת שחזור
-                </button>
-                <button
-                  type="button"
-                  className="panel-action secondary"
-                  disabled={exercise.completed || conclusionLocked}
-                  onClick={revealConclusion}
-                >
-                  הצג תשובה לשלב
-                </button>
-              </div>
+              {!isTwoParameterQuestion ? (
+                <div className="practice-actions">
+                  <button
+                    type="button"
+                    className="panel-action"
+                    disabled={exercise.completed || conclusionLocked}
+                    onClick={checkConclusion}
+                  >
+                    בדיקת שחזור
+                  </button>
+                  <button
+                    type="button"
+                    className="panel-action secondary"
+                    disabled={exercise.completed || conclusionLocked}
+                    onClick={revealConclusion}
+                  >
+                    הצג תשובה לשלב
+                  </button>
+                </div>
+              ) : null}
             </StepCard>
           ) : null}
         </div>

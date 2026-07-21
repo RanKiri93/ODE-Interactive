@@ -1,8 +1,10 @@
 import type {
+  ComplexPairDomain,
   Difficulty,
   GivenSolutionExpression,
   LambdaConstraint,
   RandomSource,
+  RealPairDomain,
   ReconstructionBehaviorCondition,
   ReconstructionCaseFilter,
   ReconstructionImpossibleReason,
@@ -18,6 +20,7 @@ export const NON_POSITIVE_ROOTS = [-3, -2, -1, 0] as const;
 export const COMPLEX_REAL_PARTS = [-2, -1, 0, 1, 2] as const;
 export const POSITIVE_FREQUENCIES = [1, 2, 3] as const;
 export const NONZERO_SHIFTS = [-2, -1, 1, 2] as const;
+export const SHIFTS = [-2, -1, 0, 1, 2] as const;
 export const NONZERO_COMBINATION_COEFFICIENTS = [-2, -1, 1, 2] as const;
 
 export type Order2TemplateOutcome =
@@ -189,10 +192,10 @@ export function templateMatchesDifficulty(
   return rank[template.difficulty] <= rank[difficulty];
 }
 
-export function pickWeightedTemplate(
+export function pickWeightedTemplate<T extends { weight: number }>(
   rng: RandomSource,
-  templates: readonly Order2ReconstructionTemplate[],
-): Order2ReconstructionTemplate {
+  templates: readonly T[],
+): T {
   const totalWeight = templates.reduce((sum, template) => sum + template.weight, 0);
   let roll = rng.next() * totalWeight;
   for (const template of templates) {
@@ -208,5 +211,160 @@ export function pickMixedOutcomeCategory(rng: RandomSource): ReconstructionOutco
   const roll = rng.integer(0, 2);
   return roll === 0 ? "unique" : roll === 1 ? "one-real-parameter" : "impossible";
 }
+
+export type Order3TemplateOutcome =
+  | "feasible-unique"
+  | "feasible-one-real-root"
+  | "feasible-two-parameter"
+  | "infeasible";
+
+export type Order3PedagogicalTag =
+  | "repeated-root"
+  | "complex-pair"
+  | "linear-combination"
+  | "behavior-essential"
+  | "behavior-redundant"
+  | "zero-collision"
+  | "degree-contradiction"
+  | "behavior-contradiction";
+
+export type Order3TemplateParameters = {
+  realRootA?: number;
+  realRootB?: number;
+  realRootC?: number;
+  realRootD?: number;
+  complexRealPart?: number;
+  secondComplexRealPart?: number;
+  frequency?: number;
+  secondFrequency?: number;
+  shift?: number;
+  constantTerm?: number;
+  coefficientA?: number;
+  coefficientB?: number;
+  coefficientC?: number;
+  coefficientD?: number;
+  useCosine?: boolean;
+  useSine?: boolean;
+  secondUseCosine?: boolean;
+};
+
+export type Order3ReconstructionTemplate = {
+  id: string;
+  difficulty: Difficulty;
+  outcome: Order3TemplateOutcome;
+  weight: number;
+  pedagogicalTags: Order3PedagogicalTag[];
+  sampleParameters: (rng: RandomSource) => Order3TemplateParameters;
+  validateParameters: (params: Order3TemplateParameters) => boolean;
+  givenSolutions: (params: Order3TemplateParameters) => GivenSolutionExpression[];
+  behaviorCondition: (params: Order3TemplateParameters) => ReconstructionBehaviorCondition;
+  declaredForcedRoots: (params: Order3TemplateParameters) => SolutionRootGroup[];
+  expectedInfeasibilityReason?: (
+    params: Order3TemplateParameters,
+  ) => ReconstructionImpossibleReason;
+  expectedDetermination?: "unique" | "one-real-parameter" | "two-parameter";
+  expectedLambdaConstraint?: (params: Order3TemplateParameters) => LambdaConstraint;
+  expectedRealPairDomain?: (params: Order3TemplateParameters) => RealPairDomain;
+  expectedComplexPairDomain?: (params: Order3TemplateParameters) => ComplexPairDomain;
+};
+
+export function order3OutcomeToCaseFilterOutcome(outcome: Order3TemplateOutcome): ReconstructionOutcome {
+  if (outcome === "feasible-unique") {
+    return "unique";
+  }
+  if (outcome === "feasible-one-real-root") {
+    return "one-real-parameter";
+  }
+  if (outcome === "feasible-two-parameter") {
+    return "two-parameter";
+  }
+  return "impossible";
+}
+
+const ORDER3_UNIQUE_TEMPLATE_IDS = new Set([
+  "O3-U01-easy",
+  "O3-U01-hard",
+  "O3-U02-easy",
+  "O3-U02-hard",
+  "O3-U03",
+  "O3-U04-easy",
+  "O3-U04-hard",
+]);
+
+const ORDER3_ONE_PARAM_TEMPLATE_IDS = new Set(["O3-P01-easy", "O3-P01-hard", "O3-P02", "O3-P03"]);
+
+const ORDER3_TWO_PARAM_TEMPLATE_IDS = new Set([
+  "O3-T01-easy",
+  "O3-T01-bounded-plus",
+  "O3-T01-bounded-minus",
+  "O3-T01-decay-plus",
+  "O3-T01-decay-minus",
+  "O3-T01-zero-plus",
+  "O3-T01-zero-minus",
+]);
+
+const ORDER3_IMPOSSIBLE_TEMPLATE_IDS = new Set([
+  "O3-I01-easy",
+  "O3-I01-hard",
+  "O3-I02",
+  "O3-I03",
+  "O3-I04",
+  "O3-I05",
+  "O3-I06",
+  "O3-I07",
+  "O3-I08",
+  "O3-I09",
+  "O3-I10",
+  "O3-I11",
+  "O3-I12",
+  "O3-I13",
+  "O3-I14",
+  "O3-I15",
+  "O3-I16-plus",
+  "O3-I16-minus",
+]);
+
+export function order3TemplateMatchesCaseFilter(
+  template: Order3ReconstructionTemplate,
+  caseFilter: ReconstructionCaseFilter,
+): boolean {
+  if (caseFilter === "mixed") {
+    return true;
+  }
+  if (caseFilter === "unique") {
+    return ORDER3_UNIQUE_TEMPLATE_IDS.has(template.id);
+  }
+  if (caseFilter === "one-real-parameter") {
+    return ORDER3_ONE_PARAM_TEMPLATE_IDS.has(template.id);
+  }
+  if (caseFilter === "two-parameter") {
+    return ORDER3_TWO_PARAM_TEMPLATE_IDS.has(template.id);
+  }
+  return ORDER3_IMPOSSIBLE_TEMPLATE_IDS.has(template.id);
+}
+
+export function order3TemplateMatchesDifficulty(
+  template: Order3ReconstructionTemplate,
+  difficulty: Difficulty,
+): boolean {
+  const rank: Record<Difficulty, number> = { easy: 0, medium: 1, hard: 2 };
+  return rank[template.difficulty] <= rank[difficulty];
+}
+
+export function pickMixedOutcomeCategoryOrder3(rng: RandomSource): ReconstructionOutcome {
+  const roll = rng.integer(0, 3);
+  if (roll === 0) {
+    return "unique";
+  }
+  if (roll === 1) {
+    return "one-real-parameter";
+  }
+  if (roll === 2) {
+    return "two-parameter";
+  }
+  return "impossible";
+}
+
+export const ORDER3_FALLBACK_TEMPLATE_ID = "O3-P01-easy";
 
 export const ORDER2_FALLBACK_TEMPLATE_ID = "O2-F01";

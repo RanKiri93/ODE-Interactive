@@ -695,13 +695,13 @@ export function EulerTransformationPractice() {
           </p>
 
           <p className="intro-equation" dir="ltr">
-            <MathText math={`${question.eulerEquationLatex},\\quad x>0`} />
+            <MathText block math={`${question.eulerEquationLatex},\\quad x>0`} />
           </p>
 
           <section className="euler-transform-strip" aria-label="הצבה">
             <div className="euler-transform-strip-heading">ההצבה שבה נשתמש:</div>
             <div className="euler-transform-strip-content" dir="ltr">
-              <MathText math="t=\ln x,\qquad u(t)=y(e^t),\qquad y(x)=u(\ln x)" />
+              <MathText block math="t=\ln x,\qquad u(t)=y(e^t),\qquad y(x)=u(\ln x)" />
             </div>
           </section>
         </div>
@@ -719,23 +719,23 @@ export function EulerTransformationPractice() {
               <div className="section-heading">סיכום הפתרון</div>
               <div className="euler-summary-formula-scroll">
                 <p className="intro-equation euler-summary-formula">
-                  <MathText math={`p(r)=${question.characteristicPolynomialLatex}`} />
+                  <MathText block math={`p(r)=${question.characteristicPolynomialLatex}`} />
                 </p>
               </div>
               <p className="euler-summary-label">המשוואה עבור u(t):</p>
               <div className="euler-summary-formula-scroll">
                 <p className="intro-equation euler-summary-formula">
-                  <MathText math={question.constantCoefficientEquationLatex} />
+                  <MathText block math={question.constantCoefficientEquationLatex} />
                 </p>
               </div>
               <div className="euler-summary-formula-scroll">
                 <p className="intro-equation euler-summary-formula">
-                  <MathText math={completionUBasisLatex} />
+                  <MathText block math={completionUBasisLatex} />
                 </p>
               </div>
               <div className="euler-summary-formula-scroll">
                 <p className="intro-equation euler-summary-formula">
-                  <MathText math={completionYBasisLatex} />
+                  <MathText block math={completionYBasisLatex} />
                 </p>
               </div>
             </div>
@@ -765,7 +765,7 @@ export function EulerTransformationPractice() {
               </p>
               <p>
                 לכל <MathText math="k\ge1" />, ההצבה <MathText math="y(x)=x^r" /> נותנת{" "}
-                <MathText math={"x^ky^{(k)}=r(r-1)\\cdots(r-k+1)x^r"} />.
+                <MathText block math={"x^ky^{(k)}=r(r-1)\\cdots(r-k+1)x^r"} />.
               </p>
             </details>
             {polyResult && !polyResult.isCorrect ? (
@@ -797,11 +797,11 @@ export function EulerTransformationPractice() {
             locked={transformedLocked}
           >
             <p className="activity-hint euler-relation-note">
-              <MathText math={"p(r)=a_nr^n+\\cdots+a_0"} />
+              <MathText block math={"p(r)=a_nr^n+\\cdots+a_0"} />
               {" "}
-              <MathText math={"\\Longrightarrow\\ p(D)u=0"} />
+              <MathText block math={"\\Longrightarrow\\ p(D)u=0"} />
               ,{" "}
-              <MathText math={"D=\\frac{d}{dt}"} />.
+              <MathText size="standard" math={"D=\\frac{d}{dt}"} />.
             </p>
             <DifferentialEquationCoefficientEditor
               degree={degree}
@@ -890,7 +890,7 @@ export function EulerTransformationPractice() {
               <details className="intro-sub-expansion">
                 <summary>רמז חזק: פירוק לגורמים</summary>
                 <p className="intro-equation">
-                  <MathText math={`p(r)=${question.factoredPolynomialLatex}`} />
+                  <MathText block math={`p(r)=${question.factoredPolynomialLatex}`} />
                 </p>
               </details>
               <RootStageHints />
@@ -990,17 +990,17 @@ export function EulerTransformationPractice() {
                 </div>
                 <div className="basis-brace-display-scroll">
                   <p className="intro-equation basis-brace-display" dir="ltr">
-                    <MathText math={uBasisSummaryLatex} />
+                    <MathText block math={uBasisSummaryLatex} />
                   </p>
                 </div>
                 <div className="euler-transition-heading">
                   כעת הציבו <MathText math="t=\ln x" />:
                 </div>
                 <div className="euler-transform-rules" dir="ltr">
-                  <MathText math={"e^{rt}\\mapsto x^r"} />
-                  <MathText math={"t^k\\mapsto(\\ln x)^k"} />
-                  <MathText math={"\\cos(\\beta t)\\mapsto\\cos(\\beta\\ln x)"} />
-                  <MathText math={"\\sin(\\beta t)\\mapsto\\sin(\\beta\\ln x)"} />
+                  <MathText size="compact" math={"e^{rt}\\mapsto x^r"} />
+                  <MathText size="compact" math={"t^k\\mapsto(\\ln x)^k"} />
+                  <MathText size="compact" math={"\\cos(\\beta t)\\mapsto\\cos(\\beta\\ln x)"} />
+                  <MathText size="compact" math={"\\sin(\\beta t)\\mapsto\\sin(\\beta\\ln x)"} />
                 </div>
               </section>
             ) : null}

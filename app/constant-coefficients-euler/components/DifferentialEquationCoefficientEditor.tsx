@@ -1,4 +1,5 @@
 import type { CoefficientFieldStatus } from "../types";
+import { formulaRowClassName } from "../math/mathTypography";
 import { MathText } from "./MathText";
 
 type DifferentialEquationCoefficientEditorProps = {
@@ -102,7 +103,7 @@ export function DifferentialEquationCoefficientEditor({
       aria-label={ariaLabel ?? `עורך משוואה עבור ${dependentVariable}(t)`}
     >
       <div className="polynomial-input-scroll">
-        <div className="polynomial-input-row" dir="ltr">
+        <div className={formulaRowClassName("polynomial-input-row")} data-variant="standard" dir="ltr">
           {hideLeadingCoefficient ? (
             <span className="polynomial-coefficient-term polynomial-leading-term">
               <span className="polynomial-power-label">

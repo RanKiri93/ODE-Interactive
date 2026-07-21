@@ -1,4 +1,5 @@
 import type { CoefficientFieldStatus } from "../types";
+import { formulaRowClassName } from "../math/mathTypography";
 import { MathText } from "./MathText";
 
 type PolynomialCoefficientEditorProps = {
@@ -78,7 +79,7 @@ export function PolynomialCoefficientEditor({
   return (
     <div className="polynomial-coefficient-editor" aria-label="עורך פולינום אופייני">
       <div className="polynomial-input-scroll">
-        <div className="polynomial-input-row" dir="ltr">
+        <div className={formulaRowClassName("polynomial-input-row")} data-variant="standard" dir="ltr">
           <span className="polynomial-editor-heading">
             <MathText math="p(r)=" />
           </span>

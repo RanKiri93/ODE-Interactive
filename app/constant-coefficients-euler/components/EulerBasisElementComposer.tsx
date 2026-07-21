@@ -299,7 +299,7 @@ export function EulerBasisElementComposer({
             disabled={disabled}
             onClick={() => onSelectTemplate(option.id)}
           >
-            <MathText math={option.label} />
+            <MathText size="compact" math={option.label} />
           </button>
         ))}
       </div>

@@ -25,7 +25,7 @@ function InitialStageMathRow({ math }: { math: string }) {
   return (
     <div className="initial-math-scroll">
       <div className="initial-math-row initial-stage-math">
-        <MathText math={math} />
+        <MathText block math={math} />
       </div>
     </div>
   );
@@ -66,7 +66,7 @@ export function InitialConditionsStage({
         <div className="initial-condition-list">
           {data.initialValues.map((value, index) => (
             <span className="initial-condition-item" key={`initial-value-${index}`}>
-              <MathText math={formatInitialValueLatex(index, value)} />
+              <MathText size="compact" math={formatInitialValueLatex(index, value)} />
             </span>
           ))}
         </div>
@@ -86,18 +86,18 @@ export function InitialConditionsStage({
           הציבו את <MathText math="x=0" /> בפתרון הכללי ובנגזרותיו.
         </p>
         <p className="intro-equation">
-          <MathText math={"y^{(k)}(0)=\\sum_{j=1}^n c_jy_j^{(k)}(0)"} />
+          <MathText block math={"y^{(k)}(0)=\\sum_{j=1}^n c_jy_j^{(k)}(0)"} />
         </p>
       </details>
 
       <details className="intro-expansion">
         <summary>רמז חזק: מערכת ליניארית</summary>
         <p className="intro-equation">
-          <MathText math="Mc=d" />
+          <MathText block math="Mc=d" />
         </p>
         {systemEquations.map((equation, index) => (
           <p className="intro-equation" key={`system-equation-${index}`}>
-            <MathText math={equation} />
+            <MathText block math={equation} />
           </p>
         ))}
       </details>

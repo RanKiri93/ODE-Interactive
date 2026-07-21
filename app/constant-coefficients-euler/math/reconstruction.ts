@@ -9,9 +9,11 @@ import {
 import type {
   AffineCoefficient,
   BasisToken,
+  ComplexPairDomain,
   EquationKind,
   GivenSolutionExpression,
   LambdaConstraint,
+  RealPairDomain,
   ReconstructionBehaviorCondition,
   ReconstructionFeasibilityAnalysis,
   ReconstructionImpossibleReason,
@@ -23,6 +25,11 @@ import {
   realRootIdentityKey,
 } from "./rootCanonicalization";
 import { flattenGivenSolutionExpressions } from "./givenSolutionExpression";
+import {
+  deriveComplexPairDomain,
+  deriveRealPairDomain,
+  extractSingleForcedRealRoot,
+} from "./parameterDomains";
 
 export function rootGroupsDegree(groups: readonly SolutionRootGroup[]): number {
   return groups.reduce(
@@ -253,6 +260,13 @@ export type ReconstructionAnalysis =
       equationFamily: AffineCoefficient[];
     }
   | {
+      kind: "two-parameter";
+      forcedRoots: SolutionRootGroup[];
+      forcedRealRoot: number;
+      realPairDomain: RealPairDomain;
+      complexPairDomain: ComplexPairDomain;
+    }
+  | {
       kind: "impossible";
       forcedRoots: SolutionRootGroup[];
       reason: ReconstructionImpossibleReason;
@@ -328,6 +342,25 @@ export function analyzeReconstruction(params: {
       lambdaConstraint: deriveLambdaConstraint(forcedRoots, params.behaviorCondition),
       polynomialFamily,
       equationFamily,
+    };
+  }
+
+  if (forcedDegree === params.order - 2) {
+    const forcedRealRoot = extractSingleForcedRealRoot(forcedRoots);
+    if (forcedRealRoot === null) {
+      return {
+        kind: "impossible",
+        forcedRoots,
+        reason: "forced-degree-exceeds-order",
+      };
+    }
+
+    return {
+      kind: "two-parameter",
+      forcedRoots,
+      forcedRealRoot,
+      realPairDomain: deriveRealPairDomain(forcedRoots, params.behaviorCondition),
+      complexPairDomain: deriveComplexPairDomain(forcedRoots, params.behaviorCondition),
     };
   }
 

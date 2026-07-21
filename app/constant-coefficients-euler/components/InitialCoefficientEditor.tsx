@@ -36,7 +36,7 @@ export function InitialCoefficientEditor({
       {Array.from({ length: count }, (_, index) => (
         <label key={`initial-coefficient-${index}`} className="initial-coefficient-item">
           <span className="initial-coefficient-label">
-            <MathText math={`c_{${index + 1}}=`} />
+            <MathText size="standard" math={`c_{${index + 1}}=`} />
           </span>
           <input
             type="text"

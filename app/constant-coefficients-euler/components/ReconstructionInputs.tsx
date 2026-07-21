@@ -1,6 +1,7 @@
 import {
   lambdaConstraintOptions,
   reconstructionDeterminationOptions,
+  reconstructionDeterminationOptionsOrder3,
   reconstructionFeasibilityOptions,
   reconstructionImpossibleReasonOptions,
 } from "../constants";
@@ -48,7 +49,7 @@ function RadioCard({
         {description ? <div className="stability-option-description">{description}</div> : null}
         {latex ? (
           <span className="reconstruction-radio-latex">
-            <MathText math={latex} />
+            <MathText size="compact" math={latex} />
           </span>
         ) : null}
       </div>
@@ -88,17 +89,22 @@ export function ReconstructionFeasibilityInput({
 export function ReconstructionDeterminationInput({
   value,
   disabled,
+  order = 2,
   onChange,
 }: {
   value: ReconstructionDetermination | null;
   disabled?: boolean;
+  order?: number;
   onChange: (value: ReconstructionDetermination) => void;
 }) {
+  const options =
+    order === 3 ? reconstructionDeterminationOptionsOrder3 : reconstructionDeterminationOptions;
+
   return (
     <fieldset className="stability-fieldset">
       <legend>יחידות המשוואה</legend>
       <div className="stability-option-list" role="radiogroup" aria-label="יחידות המשוואה">
-        {reconstructionDeterminationOptions.map((option) => (
+        {options.map((option) => (
           <RadioCard
             key={option.value}
             name="reconstruction-determination"
@@ -149,7 +155,7 @@ export function LambdaConstraintInput({
           <div className="lambda-option-content">
             <div className="lambda-option-title">{option.label}</div>
             <span className="lambda-option-math">
-              <MathText math={option.latex} />
+              <MathText size="compact" math={option.latex} />
             </span>
           </div>
         </label>
@@ -191,7 +197,7 @@ export function ReconstructionImpossibleReasonInput({
                   <>
                     {" "}
                     <span className="stability-inline-math">
-                      <MathText math={option.latex} />
+                      <MathText size="compact" math={option.latex} />
                     </span>
                   </>
                 ) : null}

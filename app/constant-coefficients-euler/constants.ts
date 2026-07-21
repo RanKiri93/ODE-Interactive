@@ -1,8 +1,10 @@
 import type {
+  BetaConstraint,
   Difficulty,
   EquationKind,
   LambdaConstraint,
   QuizSessionStats,
+  RealPairDomain,
   ReconstructionBehaviorCondition,
   ReconstructionCaseFilter,
   ReconstructionDetermination,
@@ -57,6 +59,10 @@ export const equationKindLabels: Record<EquationKind, string> = {
   "constant-coefficients": "מקדמים קבועים",
   euler: "משוואת אוילר",
 };
+
+export function equationDomainLatex(equationKind: EquationKind): string {
+  return equationKind === "euler" ? "x>0" : "\\mathbb R";
+}
 
 export const emptyQuizStats: QuizSessionStats = {
   answered: 0,
@@ -128,6 +134,7 @@ export const reconstructionCaseFilterLabels: Record<ReconstructionCaseFilter, st
   mixed: "מעורב",
   unique: "משוואה יחידה",
   "one-real-parameter": "משפחה חד־פרמטרית",
+  "two-parameter": "משפחה דו־פרמטרית",
   impossible: "אין משוואה מתאימה",
 };
 
@@ -164,6 +171,19 @@ export const reconstructionDeterminationOptions: Array<{
   },
 ];
 
+export const reconstructionDeterminationOptionsOrder3: Array<{
+  value: ReconstructionDetermination;
+  label: string;
+  description?: string;
+}> = [
+  ...reconstructionDeterminationOptions,
+  {
+    value: "two-parameter",
+    label: "משפחה דו־פרמטרית",
+    description: "נותר גורם ריבועי חופשי, המתאר שני שורשים חסרים.",
+  },
+];
+
 export const reconstructionOutcomeOptions: Array<{
   value: ReconstructionOutcome;
   label: string;
@@ -186,6 +206,34 @@ export const lambdaConstraintOptions: Array<{
   { value: "non-positive", label: "לא חיובי", latex: "\\lambda\\le0" },
   { value: "positive", label: "חיובי ממש", latex: "\\lambda>0" },
   { value: "non-negative", label: "לא שלילי", latex: "\\lambda\\ge0" },
+];
+
+export const realPairDomainOptions: Array<{
+  value: RealPairDomain;
+  latex: string;
+}> = [
+  { value: "all-real-pairs", latex: "(\\lambda_1,\\lambda_2)\\in\\mathbb R^2" },
+  {
+    value: "non-positive-not-both-zero",
+    latex: "\\lambda_1,\\lambda_2\\le0,\\quad(\\lambda_1,\\lambda_2)\\ne(0,0)",
+  },
+  { value: "strictly-negative", latex: "\\lambda_1<0,\\quad\\lambda_2<0" },
+  {
+    value: "non-negative-not-both-zero",
+    latex: "\\lambda_1,\\lambda_2\\ge0,\\quad(\\lambda_1,\\lambda_2)\\ne(0,0)",
+  },
+  { value: "strictly-positive", latex: "\\lambda_1>0,\\quad\\lambda_2>0" },
+];
+
+export const betaConstraintOptions: Array<{
+  value: BetaConstraint;
+  label: string;
+  latex: string;
+}> = [
+  { value: "all-real", label: "כל ערך ממשי", latex: "\\beta\\in\\mathbb R" },
+  { value: "nonzero", label: "שונה מאפס", latex: "\\beta\\ne0" },
+  { value: "non-negative", label: "לא שלילי", latex: "\\beta\\ge0" },
+  { value: "positive", label: "חיובי ממש", latex: "\\beta>0" },
 ];
 
 export const reconstructionImpossibleReasonOptions: Array<{

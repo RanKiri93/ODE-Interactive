@@ -924,7 +924,7 @@ export function EquationReconstructionPractice() {
               <p className="intro-equation">
                 המשוואה המנורמלת היא:{" "}
                 <MathText
-                  size="standard"
+                  variant="standard"
                   block
                   math={
                     question.equationKind === "constant-coefficients"

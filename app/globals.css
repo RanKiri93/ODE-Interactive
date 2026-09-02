@@ -11,8 +11,10 @@
   --green: #2f7f72;
   --green-soft: #dcece7;
   --rust: #b85735;
+  --danger: #b42318;
   --gold: #c38c2c;
   --panel: rgba(255, 252, 244, 0.82);
+  --raised: #fffdf8;
   --shadow: 0 24px 80px rgba(37, 43, 51, 0.12);
   --math-size-inline: 1em;
   --math-size-compact: clamp(1rem, 1.1vw, 1.12rem);
@@ -116,7 +118,7 @@ nav {
 
 .lab-grid {
   display: grid;
-  grid-template-columns: minmax(250px, 310px) minmax(460px, 1fr) minmax(240px, 300px);
+  grid-template-columns: minmax(270px, 330px) minmax(520px, 1fr) minmax(260px, 340px);
   gap: 16px;
   max-width: 1540px;
   margin: 0 auto;
@@ -125,7 +127,7 @@ nav {
 
 .assembler-grid {
   display: grid;
-  grid-template-columns: minmax(270px, 330px) minmax(460px, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(270px, 330px) minmax(520px, 1fr) minmax(260px, 340px);
   gap: 16px;
   max-width: 1540px;
   margin: 0 auto;
@@ -134,7 +136,7 @@ nav {
 
 .equation-assembler-grid {
   display: grid;
-  grid-template-columns: minmax(270px, 330px) minmax(460px, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(270px, 330px) minmax(520px, 1fr) minmax(260px, 340px);
   gap: 16px;
   max-width: 1540px;
   margin: 0 auto;
@@ -171,8 +173,15 @@ nav {
 .analysis-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
   padding: 14px;
+}
+
+.control-panel {
+  gap: 14px;
+}
+
+.analysis-panel {
+  gap: 12px;
 }
 
 .panel-section,
@@ -220,7 +229,7 @@ code {
 
 .math-display-centered {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
@@ -235,6 +244,11 @@ code {
 .math-display .katex-display {
   margin: 0;
   text-align: center;
+}
+
+.math-display-centered .katex-display {
+  min-width: max-content;
+  margin-inline: auto;
 }
 
 .math-render {
@@ -267,12 +281,6 @@ code {
 }
 
 .math-formula-row .katex {
-  font-size: var(--math-font-size) !important;
-}
-
-/* Inline MathText tokens inside formula rows must follow the row size,
-   overriding the per-variant .math-render rules that outrank the row rule. */
-.math-formula-row .math-render[data-variant] .katex {
   font-size: var(--math-font-size) !important;
 }
 
@@ -330,7 +338,7 @@ code {
   min-width: 0;
   border: 1px solid rgba(37, 43, 51, 0.18);
   border-radius: 7px;
-  background: #fffdf8;
+  background: var(--raised);
   color: var(--ink);
   padding: 10px 8px;
   text-align: center;
@@ -371,12 +379,15 @@ code {
 .segmented-control button {
   border: 1px solid rgba(37, 43, 51, 0.14);
   border-radius: 7px;
-  background: #fffdf8;
   color: var(--ink);
   min-height: 38px;
   padding: 8px 10px;
   font-size: 0.9rem;
   font-weight: 700;
+}
+
+.preset-grid button {
+  background: var(--raised);
 }
 
 .preset-grid button:hover,
@@ -412,7 +423,7 @@ code {
 }
 
 .segmented-control button.selected {
-  background: #fffdf8;
+  background: var(--raised);
   color: var(--blue);
   box-shadow: 0 6px 18px rgba(37, 43, 51, 0.1);
 }
@@ -439,7 +450,7 @@ input[type="range"] {
   margin-top: 13px;
   border: 1px solid rgba(44, 69, 107, 0.26);
   border-radius: 7px;
-  background: #fffdf8;
+  background: var(--raised);
   color: #2c456b;
   font-size: 0.9rem;
   font-weight: 800;
@@ -462,11 +473,238 @@ input[type="range"] {
 
 .practice-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 320px) minmax(520px, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(270px, 330px) minmax(520px, 1fr) minmax(260px, 340px);
   gap: 16px;
   max-width: 1540px;
   margin: 0 auto;
   min-height: calc(100vh - 142px);
+}
+
+.fundamental-activity-grid {
+  display: grid;
+  grid-template-columns: minmax(270px, 330px) minmax(520px, 1fr) minmax(260px, 340px);
+  gap: 16px;
+  max-width: 1540px;
+  margin: 0 auto;
+  min-height: calc(100vh - 142px);
+}
+
+.fundamental-activity-grid > * {
+  min-width: 0;
+}
+
+/* Function Sequences & Series module — future 3-column lab (control | graph | analysis) */
+.function-series-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(270px, 330px) minmax(520px, 1fr) minmax(260px, 340px);
+  gap: 16px;
+  max-width: 1540px;
+  margin: 0 auto;
+  min-height: calc(100vh - 142px);
+}
+
+.function-series-lab-grid > * {
+  min-width: 0;
+}
+
+.fundamental-activity-main {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fundamental-activity-main .practice-question-card,
+.fundamental-activity-main .formula-answer-card,
+.equation-assembler-inputs {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.equation-assembler-inputs {
+  display: grid;
+  gap: 16px;
+}
+
+.equation-assembler-formula-block {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.assembler-equation-hero {
+  margin-top: 4px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.assembler-equation-hero .math-display,
+.assembler-equation-hero .math-display-centered {
+  display: block;
+  width: max-content;
+  max-width: none;
+  min-width: 100%;
+}
+
+.assembler-equation-hero .katex-display {
+  margin: 0;
+  overflow: visible;
+}
+
+.assembler-parse-error {
+  color: rgb(184, 87, 53);
+}
+
+.fundamental-question-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.fundamental-question-list button {
+  min-height: 38px;
+  border: 1px solid rgba(37, 43, 51, 0.14);
+  border-radius: 7px;
+  background: var(--raised);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.fundamental-question-list button.selected {
+  border-color: rgba(35, 87, 137, 0.28);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.fundamental-question-meta {
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(37, 43, 51, 0.1);
+  border-radius: 7px;
+  background: rgba(255, 253, 248, 0.68);
+  padding: 10px;
+}
+
+.fundamental-question-meta strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.fundamental-question-meta span {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.fundamental-given-data {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.fundamental-given-data section,
+.formula-answer-card {
+  border: 1px solid rgba(37, 43, 51, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.46);
+  padding: 13px;
+}
+
+.fundamental-given-data section > span,
+.formula-preview > span,
+.feedback-verification > span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.formula-answer-card {
+  display: grid;
+  gap: 13px;
+}
+
+.formula-input-label {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.formula-input-label input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(37, 43, 51, 0.18);
+  border-radius: 7px;
+  background: var(--raised);
+  color: var(--ink);
+  padding: 10px 12px;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+  font-family: KaTeX_Main, "Times New Roman", serif;
+  font-size: 1.08rem;
+  outline: none;
+}
+
+.formula-input-label input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(35, 87, 137, 0.14);
+}
+
+.formula-preview {
+  min-height: 92px;
+  overflow-x: auto;
+}
+
+.formula-preview p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.fundamental-side-panel {
+  align-content: start;
+  min-width: 0;
+}
+
+.fundamental-hints {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.hint-step-list {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.hint-step-list .calculation-card {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hint-step-list .calculation-card strong {
+  margin-bottom: 6px;
+}
+
+.hint-step-list .calculation-card .math-display,
+.hint-step-list .calculation-card .math-display-centered {
+  max-width: 100%;
+}
+
+.feedback-verification {
+  margin-top: 12px;
+  overflow-x: auto;
 }
 
 .practice-panel {
@@ -480,8 +718,12 @@ input[type="range"] {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
-  box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
+}
+
+.practice-main,
+.practice-large-portrait {
+  box-shadow: var(--shadow);
 }
 
 .practice-main {
@@ -805,7 +1047,7 @@ input[type="range"] {
   min-height: 38px;
   border: 1px solid rgba(37, 43, 51, 0.14);
   border-radius: 7px;
-  background: #fffdf8;
+  background: var(--raised);
   color: var(--ink);
   padding: 8px 10px;
   font-size: 0.88rem;
@@ -847,7 +1089,7 @@ input[type="range"] {
   min-width: 0;
   border: 1px solid rgba(37, 43, 51, 0.18);
   border-radius: 7px;
-  background: #fffdf8;
+  background: var(--raised);
   color: var(--ink);
   padding: 9px 8px;
   text-align: center;
@@ -953,7 +1195,7 @@ input[type="range"] {
 .root-input-row-heading button {
   border: 1px solid rgba(37, 43, 51, 0.14);
   border-radius: 7px;
-  background: #fffdf8;
+  background: var(--raised);
   color: var(--muted);
   padding: 4px 8px;
   font-size: 0.78rem;
@@ -985,7 +1227,7 @@ input[type="range"] {
   min-width: 0;
   border: 1px solid rgba(37, 43, 51, 0.18);
   border-radius: 7px;
-  background: #fffdf8;
+  background: var(--raised);
   color: var(--ink);
   padding: 7px 6px;
   text-align: center;
@@ -1317,7 +1559,7 @@ input[type="range"] {
 }
 
 .stage-feedback {
-  color: var(--danger, #b42318);
+  color: var(--danger);
   margin: 0;
 }
 
@@ -1565,12 +1807,13 @@ input[type="range"] {
   min-width: 4.25rem;
   height: 2.7rem;
   padding: 0.35rem 0.5rem;
-  border: 1.5px solid rgba(37, 43, 51, 0.16);
+  border: 1.5px solid var(--line);
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.88);
   color: inherit;
   text-align: center;
   direction: ltr;
+  unicode-bidi: isolate;
   font-size: 1.1rem;
   font-weight: 500;
   line-height: 1;
@@ -1774,7 +2017,7 @@ input[type="range"] {
 .polynomial-coefficient-input {
   width: 3.5rem;
   padding: 6px 8px;
-  border: 1px solid rgba(37, 43, 51, 0.16);
+  border: 1px solid var(--line);
   border-radius: 6px;
   text-align: center;
 }
@@ -1787,7 +2030,7 @@ input[type="range"] {
   padding: 4px 8px;
   border-radius: 6px;
   background: rgba(37, 43, 51, 0.92);
-  color: #fff;
+  color: #fff; /* sanctioned: inverse text on ink */
   font-size: 0.78rem;
   white-space: nowrap;
   opacity: 0;
@@ -1837,7 +2080,7 @@ input[type="range"] {
 .root-inline-input {
   width: 4.5rem;
   padding: 6px 8px;
-  border: 1px solid rgba(37, 43, 51, 0.16);
+  border: 1px solid var(--line);
   border-radius: 6px;
   text-align: center;
 }
@@ -1970,7 +2213,7 @@ input[type="range"] {
 
 .basis-element-delete:hover:not(:disabled) {
   border-color: rgba(180, 35, 24, 0.55);
-  color: var(--danger, #b42318);
+  color: var(--danger);
 }
 
 .constant-basis-add-button {
@@ -2106,7 +2349,7 @@ input[type="range"] {
   min-width: 180px;
   min-height: 44px;
   padding: 8px 10px;
-  border: 1px solid rgba(37, 43, 51, 0.16);
+  border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.88);
   cursor: pointer;
@@ -2162,12 +2405,13 @@ input[type="range"] {
   min-width: 3rem;
   height: 2rem;
   padding: 0.1rem 0.25rem;
-  border: 1px solid rgba(37, 43, 51, 0.16);
+  border: 1px solid var(--line);
   border-radius: 0.4rem;
   background: rgba(255, 255, 255, 0.88);
   color: inherit;
   text-align: center;
   direction: ltr;
+  unicode-bidi: isolate;
   font: inherit;
   line-height: 1;
 }
@@ -2217,7 +2461,7 @@ input[type="range"] {
   width: 3.5rem;
   min-height: 34px;
   padding: 4px 6px;
-  border: 1px solid rgba(37, 43, 51, 0.16);
+  border: 1px solid var(--line);
   border-radius: 6px;
   text-align: center;
 }
@@ -2248,7 +2492,7 @@ input[type="range"] {
 .practice-root-row-fields select {
   min-height: 36px;
   padding: 6px 8px;
-  border: 1px solid rgba(37, 43, 51, 0.16);
+  border: 1px solid var(--line);
   border-radius: 6px;
 }
 
@@ -2317,7 +2561,7 @@ input[type="range"] {
   width: 100%;
   min-height: 36px;
   padding: 6px 8px;
-  border: 1px solid rgba(37, 43, 51, 0.16);
+  border: 1px solid var(--line);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.88);
   color: var(--ink);
@@ -2410,7 +2654,7 @@ input[type="range"] {
 }
 
 .method-panel {
-  color: #555b58;
+  color: var(--muted);
   font-size: 0.9rem;
   line-height: 1.55;
 }
@@ -2453,7 +2697,8 @@ input[type="range"] {
   font-size: 0.96rem;
 }
 
-.method-equation-stack .math-render + .math-render {
+.method-equation-stack .math-render + .math-render,
+.method-equation-stack .math-display + .math-display {
   padding-left: 18px;
 }
 
@@ -2496,7 +2741,7 @@ input[type="range"] {
 }
 
 .star-asymptotic-table span {
-  color: #555b58;
+  color: var(--muted);
   font-size: 0.86rem;
 }
 
@@ -2590,10 +2835,6 @@ input[type="range"] {
   display: block;
   width: 100%;
   height: 100%;
-}
-
-.analysis-panel {
-  gap: 12px;
 }
 
 .result-card {
@@ -2740,7 +2981,7 @@ input[type="range"] {
   overflow: auto;
   border: 1px solid rgba(37, 43, 51, 0.18);
   border-radius: 8px;
-  background: #fffdf8;
+  background: var(--raised);
   box-shadow: 0 28px 100px rgba(37, 43, 51, 0.26);
   padding: 16px;
 }
@@ -2804,7 +3045,7 @@ input[type="range"] {
   min-width: 0;
   border: 1px solid rgba(37, 43, 51, 0.18);
   border-radius: 7px;
-  background: #fbf7ed;
+  background: var(--paper);
   color: var(--ink);
   padding: 8px;
   text-align: center;
@@ -2834,7 +3075,7 @@ input[type="range"] {
   min-height: 36px;
   border: 1px solid rgba(44, 69, 107, 0.24);
   border-radius: 7px;
-  background: #fffdf8;
+  background: var(--raised);
   color: #2c456b;
   padding: 8px 12px;
   font-weight: 800;
@@ -2923,6 +3164,16 @@ input[type="range"] {
 .course-module-card.active {
   border-color: rgba(35, 87, 137, 0.28);
   background: rgba(220, 233, 245, 0.62);
+}
+
+.course-module-card.construction {
+  border-style: dashed;
+  border-color: rgba(146, 106, 32, 0.35);
+  background: rgba(247, 240, 222, 0.55);
+}
+
+.course-module-card.construction span {
+  color: rgba(146, 106, 32, 0.9);
 }
 
 .module-page-topbar {
@@ -3209,11 +3460,14 @@ input[type="range"] {
   .lab-grid,
   .assembler-grid,
   .equation-assembler-grid,
-  .practice-grid {
+  .fundamental-activity-grid,
+  .practice-grid,
+  .function-series-lab-grid {
     grid-template-columns: minmax(240px, 300px) 1fr;
   }
 
   .analysis-panel,
+  .fundamental-side-panel,
   .practice-feedback-panel {
     grid-column: 1 / -1;
     display: grid;
@@ -3250,7 +3504,9 @@ input[type="range"] {
   .lab-grid,
   .assembler-grid,
   .equation-assembler-grid,
+  .fundamental-activity-grid,
   .practice-grid,
+  .function-series-lab-grid,
   .analysis-panel {
     grid-template-columns: 1fr;
   }
@@ -3271,6 +3527,10 @@ input[type="range"] {
     width: 100%;
   }
 
+  .formula-input-label {
+    grid-template-columns: 1fr;
+  }
+
   .canvas-wrap {
     min-height: 430px;
   }
@@ -3284,4 +3544,25 @@ input[type="range"] {
   .module-intro-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Function Sequences & Series module */
+.function-series-roadmap h3 {
+  margin: 8px 0 12px;
+  color: var(--ink);
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.planned-activities {
+  margin-top: 8px;
+}
+
+.planned-activities .intro-numbered-list {
+  margin-top: 4px;
+}
+
+.planned-activities + .embedded-placeholder {
+  margin-top: 18px;
 }

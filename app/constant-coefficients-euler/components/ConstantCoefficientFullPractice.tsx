@@ -698,7 +698,7 @@ export function ConstantCoefficientFullPractice() {
               <ul>
                 {question.roots.map((group, index) => (
                   <li key={`summary-root-${index}`}>
-                    <MathText size="compact" math={formatRootGroupHint(group)} />
+                    <MathText variant="compact" math={formatRootGroupHint(group)} />
                   </li>
                 ))}
               </ul>

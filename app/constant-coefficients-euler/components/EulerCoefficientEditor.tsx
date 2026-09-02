@@ -55,7 +55,7 @@ export function EulerCoefficientEditor({
           return (
             <div className={`polynomial-coefficient-term ${fieldClassName(status)}`} key={order}>
               <label htmlFor={`euler-coeff-${order}`}>
-                <MathText size="standard" math={eulerTermLabel(order)} />
+                <MathText variant="standard" math={eulerTermLabel(order)} />
               </label>
               <input
                 id={`euler-coeff-${order}`}
@@ -71,7 +71,7 @@ export function EulerCoefficientEditor({
           );
         })}
         <span className="polynomial-power-label">
-          <MathText size="standard" math="=0" />
+          <MathText variant="standard" math="=0" />
         </span>
       </div>
     </div>

@@ -196,7 +196,7 @@ export function ReconstructionTwoParameterConclusion({
                 />
                 <div className="lambda-option-content">
                   <span className="lambda-option-math">
-                    <MathText size="compact" math={option.latex} />
+                    <MathText variant="compact" math={option.latex} />
                   </span>
                 </div>
               </label>
@@ -256,7 +256,7 @@ export function ReconstructionTwoParameterConclusion({
           <div className="reconstruction-two-param-rows">
             <div className="reconstruction-two-param-row">
               <span className="reconstruction-two-param-label">
-                <MathText size="standard" math={"\\alpha"} />
+                <MathText variant="standard" math={"\\alpha"} />
               </span>
               <LambdaConstraintInput
                 value={complexAlphaConstraint}
@@ -267,7 +267,7 @@ export function ReconstructionTwoParameterConclusion({
             </div>
             <div className="reconstruction-two-param-row">
               <span className="reconstruction-two-param-label">
-                <MathText size="standard" math={"\\beta"} />
+                <MathText variant="standard" math={"\\beta"} />
               </span>
               <div className="lambda-option-list" role="radiogroup" aria-label="תנאי על beta">
                 {betaConstraintOptions.map((option) => (
@@ -286,7 +286,7 @@ export function ReconstructionTwoParameterConclusion({
                     <div className="lambda-option-content">
                       <div className="lambda-option-title">{option.label}</div>
                       <span className="lambda-option-math">
-                        <MathText size="compact" math={option.latex} />
+                        <MathText variant="compact" math={option.latex} />
                       </span>
                     </div>
                   </label>

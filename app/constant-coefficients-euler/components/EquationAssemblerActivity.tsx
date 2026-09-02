@@ -216,7 +216,7 @@ export function EquationAssemblerActivity() {
                 {assembled.characteristicPolynomial.map((coefficient, index) => (
                   <div key={`power-${index}`}>
                     <span>
-                      <MathText size="compact" math={`a_{${index}}`} />
+                      <MathText variant="compact" math={`a_{${index}}`} />
                     </span>
                     <strong>{formatNumber(coefficient)}</strong>
                   </div>
@@ -230,7 +230,7 @@ export function EquationAssemblerActivity() {
                   {assembled.eulerCoefficients.map((coefficient, index) => (
                     <div key={`euler-${index}`}>
                       <span>
-                        <MathText size="compact" math={`b_{${index}}`} />
+                        <MathText variant="compact" math={`b_{${index}}`} />
                       </span>
                       <strong>{formatNumber(coefficient)}</strong>
                     </div>

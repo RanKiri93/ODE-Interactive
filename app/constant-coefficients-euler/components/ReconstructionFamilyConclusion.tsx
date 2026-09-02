@@ -98,7 +98,7 @@ export function ReconstructionFamilyConclusion({
       </div>
       <div className="reconstruction-family-formula">
         <MathText
-          size="standard"
+          variant="standard"
           block
           math={
             question.equationKind === "constant-coefficients"
@@ -142,7 +142,7 @@ export function ReconstructionFamilyConclusion({
           </p>
           <p className="intro-equation">
             <MathText
-              size="standard"
+              variant="standard"
               block
               math={
                 question.equationKind === "constant-coefficients"

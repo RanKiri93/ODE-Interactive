@@ -801,7 +801,7 @@ export function EulerTransformationPractice() {
               {" "}
               <MathText block math={"\\Longrightarrow\\ p(D)u=0"} />
               ,{" "}
-              <MathText size="standard" math={"D=\\frac{d}{dt}"} />.
+              <MathText variant="standard" math={"D=\\frac{d}{dt}"} />.
             </p>
             <DifferentialEquationCoefficientEditor
               degree={degree}
@@ -997,10 +997,10 @@ export function EulerTransformationPractice() {
                   כעת הציבו <MathText math="t=\ln x" />:
                 </div>
                 <div className="euler-transform-rules" dir="ltr">
-                  <MathText size="compact" math={"e^{rt}\\mapsto x^r"} />
-                  <MathText size="compact" math={"t^k\\mapsto(\\ln x)^k"} />
-                  <MathText size="compact" math={"\\cos(\\beta t)\\mapsto\\cos(\\beta\\ln x)"} />
-                  <MathText size="compact" math={"\\sin(\\beta t)\\mapsto\\sin(\\beta\\ln x)"} />
+                  <MathText variant="compact" math={"e^{rt}\\mapsto x^r"} />
+                  <MathText variant="compact" math={"t^k\\mapsto(\\ln x)^k"} />
+                  <MathText variant="compact" math={"\\cos(\\beta t)\\mapsto\\cos(\\beta\\ln x)"} />
+                  <MathText variant="compact" math={"\\sin(\\beta t)\\mapsto\\sin(\\beta\\ln x)"} />
                 </div>
               </section>
             ) : null}

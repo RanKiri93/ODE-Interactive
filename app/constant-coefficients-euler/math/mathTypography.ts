@@ -6,9 +6,6 @@ export type MathDisplayVariant = "inline" | "compact" | "standard";
  * DisplayMath and .math-formula-row always consume --math-size-standard.
  */
 
-/** @deprecated Use MathDisplayVariant */
-export type MathSize = MathDisplayVariant;
-
 export function displayMathClassName({
   centered = true,
   className,

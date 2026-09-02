@@ -198,7 +198,7 @@ export function ConstantBasisComposer({
             <li key={entry.id} className="basis-element-grid-item">
               <div className="basis-element-card">
                 <div className="basis-element-formula">
-                  <MathText size="compact" math={formatBasisTokenPreview(entry.token, resolvedContext)} />
+                  <MathText variant="compact" math={formatBasisTokenPreview(entry.token, resolvedContext)} />
                 </div>
 
                 <div className="basis-element-actions">

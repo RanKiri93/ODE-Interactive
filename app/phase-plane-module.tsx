@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import katex from "katex";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { InlineMath } from "react-katex";
 
@@ -1005,9 +1006,9 @@ function MatrixCalculationDetails({ phaseCase }: { phaseCase: GeneratedPhaseCase
       <section className="calculation-card">
         <div className="section-heading">דרך 1: ערכים עצמיים</div>
         <div className="calculation-equations" dir="ltr">
-          <MathText math={String.raw`p_A(\lambda)=${characteristicPolynomialLatex(phaseCase)}`} />
-          <MathText math={eigenvalueFormulaLatex(phaseCase)} />
-          <MathText math={String.raw`\lambda_1=${eigenvalues[0]},\quad \lambda_2=${eigenvalues[1]}`} />
+          <MathText block math={String.raw`p_A(\lambda)=${characteristicPolynomialLatex(phaseCase)}`} />
+          <MathText block math={eigenvalueFormulaLatex(phaseCase)} />
+          <MathText block math={String.raw`\lambda_1=${eigenvalues[0]},\quad \lambda_2=${eigenvalues[1]}`} />
         </div>
         <p>{diagonalizationNote(phaseCase.kind)}</p>
         <p>{eigenvalueConclusion(phaseCase.kind)}</p>
@@ -1016,9 +1017,9 @@ function MatrixCalculationDetails({ phaseCase }: { phaseCase: GeneratedPhaseCase
       <section className="calculation-card">
         <div className="section-heading">דרך 2: עקבה ודטרמיננטה</div>
         <div className="calculation-equations" dir="ltr">
-          <MathText math={String.raw`\tau=\operatorname{tr}(A)=${formatNumber(phaseCase.trace)}`} />
-          <MathText math={String.raw`\delta=\det(A)=${formatNumber(phaseCase.determinant)}`} />
-          <MathText math={String.raw`D=\tau^2-4\delta=${formatNumber(phaseCase.discriminant)}`} />
+          <MathText block math={String.raw`\tau=\operatorname{tr}(A)=${formatNumber(phaseCase.trace)}`} />
+          <MathText block math={String.raw`\delta=\det(A)=${formatNumber(phaseCase.determinant)}`} />
+          <MathText block math={String.raw`D=\tau^2-4\delta=${formatNumber(phaseCase.discriminant)}`} />
         </div>
         <p>{matrixFeedbackText(phaseCase)}</p>
       </section>
@@ -1387,9 +1388,81 @@ function rationalDisplayParts(value: number) {
   return { kind: "fraction" as const, sign, numerator: String(bestNumerator), denominator: String(bestDenominator) };
 }
 
-function MathText({ math }: { math: string }) {
+type MathDisplayVariant = "inline" | "compact" | "standard";
+
+function displayMathClassName({
+  centered = true,
+  className,
+}: {
+  centered?: boolean;
+  className?: string;
+}): string {
+  return ["math-display", centered ? "math-display-centered" : "", className]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function inlineMathClassName({ className }: { variant?: MathDisplayVariant; className?: string }): string {
+  return ["math-render", className].filter(Boolean).join(" ");
+}
+
+function DisplayMath({
+  latex,
+  className,
+  centered = true,
+}: {
+  latex: string;
+  className?: string;
+  centered?: boolean;
+}) {
+  const html = useMemo(() => {
+    try {
+      return katex.renderToString(latex, {
+        displayMode: true,
+        throwOnError: false,
+        strict: "ignore",
+      });
+    } catch {
+      return katex.renderToString(String(latex), {
+        displayMode: true,
+        throwOnError: false,
+        strict: "ignore",
+      });
+    }
+  }, [latex]);
+
   return (
-    <span className="math-render" dir="ltr">
+    <span
+      className={displayMathClassName({ centered, className })}
+      dir="ltr"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
+function MathText({
+  math,
+  variant,
+  block = false,
+  className,
+}: {
+  math: string;
+  variant?: MathDisplayVariant;
+  block?: boolean;
+  className?: string;
+}) {
+  const resolvedVariant = variant ?? "inline";
+
+  if (block) {
+    return <DisplayMath latex={math} className={className} />;
+  }
+
+  return (
+    <span
+      className={inlineMathClassName({ variant: resolvedVariant, className })}
+      data-variant={resolvedVariant}
+      dir="ltr"
+    >
       <InlineMath math={math} />
     </span>
   );
@@ -3030,14 +3103,14 @@ function DiagonalizableMethodPanel({
         המטריצה לכסינה עם וקטורים עצמיים:
       </p>
       <div className="method-vector-grid" dir="ltr">
-        <MathText math={String.raw`V_1=${vectorLatex(firstVector)}`} />
-        <MathText math={String.raw`V_2=${vectorLatex(secondVector)}`} />
+        <MathText block math={String.raw`V_1=${vectorLatex(firstVector)}`} />
+        <MathText block math={String.raw`V_2=${vectorLatex(secondVector)}`} />
       </div>
       <p>
         ולכן הפתרון הכללי הוא מהצורה:
       </p>
       <div className="method-equation" dir="ltr">
-        <MathText math={String.raw`X(t)=c_1V_1e^{\lambda_1t}+c_2V_2e^{\lambda_2t}`} />
+        <MathText block math={String.raw`X(t)=c_1V_1e^{\lambda_1t}+c_2V_2e^{\lambda_2t}`} />
       </div>
       <div className="method-asymptotics">
         <strong>התנהגות אסימפטוטית</strong>
@@ -3118,14 +3191,14 @@ function StarMethodPanel({ star }: { star: StarData }) {
         במקרה זה אפשר לבחור בסיס של וקטורים עצמיים:
       </p>
       <div className="method-vector-grid" dir="ltr">
-        <MathText math={String.raw`V_1=\begin{pmatrix}1\\0\end{pmatrix}`} />
-        <MathText math={String.raw`V_2=\begin{pmatrix}0\\1\end{pmatrix}`} />
+        <MathText block math={String.raw`V_1=\begin{pmatrix}1\\0\end{pmatrix}`} />
+        <MathText block math={String.raw`V_2=\begin{pmatrix}0\\1\end{pmatrix}`} />
       </div>
       <p>
         הפתרון הכללי הוא מהצורה:
       </p>
       <div className="method-equation" dir="ltr">
-        <MathText math={String.raw`X(t)=(c_1V_1+c_2V_2)e^{\lambda t}`} />
+        <MathText block math={String.raw`X(t)=(c_1V_1+c_2V_2)e^{\lambda t}`} />
       </div>
       <p>
         הפתרון מתאר ישר שכיוונו <MathText math={String.raw`c_1V_1+c_2V_2`} />.
@@ -3179,20 +3252,20 @@ function DefectiveNodeMethodPanel({ node }: { node: DefectiveNodeData }) {
         במקרה זה אפשר לבחור בסיס שמורכב מווקטור עצמי:
       </p>
       <div className="method-vector-grid" dir="ltr">
-        <MathText math={String.raw`V_1=${vectorLatex(eigenvector)}`} />
+        <MathText block math={String.raw`V_1=${vectorLatex(eigenvector)}`} />
       </div>
       <p>
         ומווקטור חבר:
       </p>
       <div className="method-vector-row" dir="ltr">
-        <MathText math={String.raw`V_2=${vectorLatex(generalizedVector)}`} />
-        <MathText math={String.raw`(A-\lambda I)V_2=V_1`} />
+        <MathText block math={String.raw`V_2=${vectorLatex(generalizedVector)}`} />
+        <MathText block math={String.raw`(A-\lambda I)V_2=V_1`} />
       </div>
       <p>
         הפתרון הכללי הוא מהצורה:
       </p>
       <div className="method-equation" dir="ltr">
-        <MathText math={String.raw`X(t)=c_1V_1e^{\lambda t}+c_2(tV_1+V_2)e^{\lambda t}`} />
+        <MathText block math={String.raw`X(t)=c_1V_1e^{\lambda t}+c_2(tV_1+V_2)e^{\lambda t}`} />
       </div>
       <div className="method-asymptotics">
         <strong>התנהגות אסימפטוטית</strong>
@@ -3229,13 +3302,13 @@ function CenterMethodPanel({ matrix, center }: { matrix: Matrix; center: CenterD
         למשוואה יש וקטור עצמי מרוכב:
       </p>
       <div className="method-vector-grid" dir="ltr">
-        <MathText math={String.raw`V=${data.eigenvector}`} />
+        <MathText block math={String.raw`V=${data.eigenvector}`} />
       </div>
       <p>
         וצורת הפתרון הכללית היא:
       </p>
       <div className="method-equation" dir="ltr">
-        <MathText math={String.raw`X(t)=c_1\operatorname{Re}(Ve^{i\beta t})+c_2\operatorname{Im}(Ve^{i\beta t})`} />
+        <MathText block math={String.raw`X(t)=c_1\operatorname{Re}(Ve^{i\beta t})+c_2\operatorname{Im}(Ve^{i\beta t})`} />
       </div>
       <p>
         פתרונות אלה מתארים אליפסות קונצנטריות, כולן עם סיבוב אחיד וכולן באותן פרופורציות.
@@ -3253,8 +3326,8 @@ function CenterMethodPanel({ matrix, center }: { matrix: Matrix; center: CenterD
           פתרון לדוגמה:
         </p>
         <div className="method-equation-stack" dir="ltr">
-          <MathText math={String.raw`X(t)=\operatorname{Re}(Ve^{i\beta t})`} />
-          <MathText math={String.raw`=U\cos(\beta t)-W\sin(\beta t)`} />
+          <MathText block math={String.raw`X(t)=\operatorname{Re}(Ve^{i\beta t})`} />
+          <MathText block math={String.raw`=U\cos(\beta t)-W\sin(\beta t)`} />
         </div>
         <p>
           מגדירים את המטריצה <MathText math={String.raw`M=[\,U\ -W\,]`} />, והווקטורים העצמיים של{" "}
@@ -3277,13 +3350,13 @@ function SpiralMethodPanel({ matrix, spiral }: { matrix: Matrix; spiral: SpiralD
         למשוואה יש וקטור עצמי מרוכב:
       </p>
       <div className="method-vector-grid" dir="ltr">
-        <MathText math={String.raw`V=${data.eigenvector}`} />
+        <MathText block math={String.raw`V=${data.eigenvector}`} />
       </div>
       <p>
         צורת הפתרון הכללית היא כמו במקרה המרכז, עם גורם משותף <MathText math={String.raw`e^{\alpha t}`} />:
       </p>
       <div className="method-equation" dir="ltr">
-        <MathText math={String.raw`X(t)=e^{\alpha t}\left(c_1\operatorname{Re}(Ve^{i\beta t})+c_2\operatorname{Im}(Ve^{i\beta t})\right)`} />
+        <MathText block math={String.raw`X(t)=e^{\alpha t}\left(c_1\operatorname{Re}(Ve^{i\beta t})+c_2\operatorname{Im}(Ve^{i\beta t})\right)`} />
       </div>
       <div className="method-asymptotics">
         <strong>כיוון הסיבוב</strong>
@@ -3317,7 +3390,7 @@ function ZeroEigenMethodPanel({ zeroEigen }: { zeroEigen: ZeroEigenData }) {
           במקרה זה <MathText math={String.raw`A=0`} />, ולכן המשוואה היא פשוט:
         </p>
         <div className="method-equation" dir="ltr">
-          <MathText math={String.raw`X'(t)=0`} />
+          <MathText block math={String.raw`X'(t)=0`} />
         </div>
         <p>
           כל נקודה במישור היא נקודת שיווי־משקל. לכן אין תנועה בין נקודות, ותמונת הפאזה מורכבת
@@ -3338,20 +3411,20 @@ function ZeroEigenMethodPanel({ zeroEigen }: { zeroEigen: ZeroEigenData }) {
           במקרה זה יש ערך עצמי יחיד <MathText math={String.raw`\lambda=0`} />, עם וקטור עצמי:
         </p>
         <div className="method-vector-grid" dir="ltr">
-          <MathText math={String.raw`V_1=${vectorLatex(equilibriumVector)}`} />
+          <MathText block math={String.raw`V_1=${vectorLatex(equilibriumVector)}`} />
         </div>
         <p>
           ובוחרים וקטור חבר:
         </p>
         <div className="method-vector-row" dir="ltr">
-          <MathText math={String.raw`V_2=${vectorLatex(generalizedVector)}`} />
-          <MathText math={String.raw`AV_2=V_1`} />
+          <MathText block math={String.raw`V_2=${vectorLatex(generalizedVector)}`} />
+          <MathText block math={String.raw`AV_2=V_1`} />
         </div>
         <p>
           הפתרון הכללי הוא מהצורה:
         </p>
         <div className="method-equation" dir="ltr">
-          <MathText math={String.raw`X(t)=c_1V_1+c_2(tV_1+V_2)`} />
+          <MathText block math={String.raw`X(t)=c_1V_1+c_2(tV_1+V_2)`} />
         </div>
         <div className="method-asymptotics">
           <strong>תיאור גיאומטרי</strong>
@@ -3378,19 +3451,19 @@ function ZeroEigenMethodPanel({ zeroEigen }: { zeroEigen: ZeroEigenData }) {
         במקרה זה יש ערך עצמי אפס, ולכן מתקבל ישר של נקודות שיווי־משקל בכיוון:
       </p>
       <div className="method-vector-grid" dir="ltr">
-        <MathText math={String.raw`V_1=${vectorLatex(equilibriumVector)}`} />
+        <MathText block math={String.raw`V_1=${vectorLatex(equilibriumVector)}`} />
       </div>
       <p>
         בכיוון השני יש ערך עצמי <MathText math={String.raw`\mu\ne0`} /> עם וקטור:
       </p>
       <div className="method-vector-grid" dir="ltr">
-        <MathText math={String.raw`V_2=${vectorLatex(movingVector)}`} />
+        <MathText block math={String.raw`V_2=${vectorLatex(movingVector)}`} />
       </div>
       <p>
         לכן הפתרון הכללי הוא מהצורה:
       </p>
       <div className="method-equation" dir="ltr">
-        <MathText math={String.raw`X(t)=c_1V_1+c_2V_2e^{\mu t}`} />
+        <MathText block math={String.raw`X(t)=c_1V_1+c_2V_2e^{\mu t}`} />
       </div>
       <div className="method-asymptotics">
         <strong>התנהגות אסימפטוטית</strong>
@@ -3420,14 +3493,14 @@ function MatrixAssemblerMethodPanel({ config }: { config: MatrixAssemblerConfig 
           במקרה המרוכב מזינים ערך עצמי <MathText math={eigenvalueText} /> ווקטור עצמי מרוכב מהצורה:
         </p>
         <div className="method-equation" dir="ltr">
-          <MathText math={String.raw`V=U+iW`} />
+          <MathText block math={String.raw`V=U+iW`} />
         </div>
         <p>
           עוברים לבסיס הממשי <MathText math={String.raw`P=[\,U\ W\,]`} />. בבסיס הזה פעולת המטריצה
           מתוארת על ידי:
         </p>
         <div className="method-equation" dir="ltr">
-          <MathText math={String.raw`B=\begin{pmatrix}\alpha&\beta\\-\beta&\alpha\end{pmatrix},\qquad A=PBP^{-1}`} />
+          <MathText block math={String.raw`B=\begin{pmatrix}\alpha&\beta\\-\beta&\alpha\end{pmatrix},\qquad A=PBP^{-1}`} />
         </div>
         <p>
           עבור מרכז לוקחים <MathText math={String.raw`\alpha=0`} />. לכן מתקבלת מטריצה עם ערכים עצמיים
@@ -3446,7 +3519,7 @@ function MatrixAssemblerMethodPanel({ config }: { config: MatrixAssemblerConfig 
           סקלרית של הזהות:
         </p>
         <div className="method-equation" dir="ltr">
-          <MathText math={String.raw`A=\lambda I`} />
+          <MathText block math={String.raw`A=\lambda I`} />
         </div>
         <p>
           הווקטורים <MathText math={String.raw`V_1,V_2`} /> משמשים כאן כדי להדגיש שאפשר לבחור בסיס
@@ -3465,13 +3538,13 @@ function MatrixAssemblerMethodPanel({ config }: { config: MatrixAssemblerConfig 
           <MathText math={String.raw`V_2`} /> שמקיים:
         </p>
         <div className="method-equation" dir="ltr">
-          <MathText math={String.raw`(A-\lambda I)V_2=V_1`} />
+          <MathText block math={String.raw`(A-\lambda I)V_2=V_1`} />
         </div>
         <p>
           מציבים <MathText math={String.raw`P=[\,V_1\ V_2\,]`} /> ואת בלוק ז׳ורדן:
         </p>
         <div className="method-equation" dir="ltr">
-          <MathText math={String.raw`J=\begin{pmatrix}\lambda&1\\0&\lambda\end{pmatrix},\qquad A=PJP^{-1}`} />
+          <MathText block math={String.raw`J=\begin{pmatrix}\lambda&1\\0&\lambda\end{pmatrix},\qquad A=PJP^{-1}`} />
         </div>
       </section>
     );
@@ -3485,7 +3558,7 @@ function MatrixAssemblerMethodPanel({ config }: { config: MatrixAssemblerConfig 
         ואת הערכים העצמיים במטריצה האלכסונית <MathText math={String.raw`D=\operatorname{diag}(\lambda_1,\lambda_2)`} />.
       </p>
       <div className="method-equation" dir="ltr">
-        <MathText math={String.raw`A=PDP^{-1}`} />
+        <MathText block math={String.raw`A=PDP^{-1}`} />
       </div>
       <p>
         מכיוון שהווקטורים בלתי־תלויים, <MathText math={String.raw`P`} /> הפיכה, והמטריצה שמתקבלת
@@ -3825,7 +3898,7 @@ function QuizStats({ stats }: { stats: QuizSessionStats }) {
   const percent = stats.answered === 0 ? 0 : Math.round((100 * stats.correct) / stats.answered);
   return (
     <div className="quiz-stats" aria-label="סטטיסטיקת תרגול">
-      <span>נענו: {stats.answered}</span>
+      <span>שאלות: {stats.answered}</span>
       <span>נכונות: {stats.correct}</span>
       <span>דיוק: {percent}%</span>
       <span>רצף: {stats.currentStreak}</span>
@@ -3860,7 +3933,7 @@ function MistakeReport({
       >
         <div className="sample-modal-header">
           <div>
-            <span>תרגול עצמי</span>
+            <span>תרגול</span>
             <h2 id="mistake-report-title">דו״ח טעויות</h2>
           </div>
           <button type="button" className="icon-button" onClick={onClose} aria-label="סגירה">×</button>
@@ -3991,7 +4064,7 @@ function SelfPracticeActivity() {
   };
 
   return (
-    <section className="practice-grid" aria-label="תרגול עצמי במישור הפאזה">
+    <section className="practice-grid" aria-label="תרגול במישור הפאזה">
       <aside className="control-panel practice-panel">
         <section className="panel-section">
           <div className="section-heading">פעילות</div>
@@ -4180,7 +4253,7 @@ function SelfPracticeActivity() {
       <aside className="analysis-panel practice-feedback-panel">
         <section className="result-card primary">
           <span>סוג השאלה</span>
-          <strong>{checked ? phaseKindLabels[phaseCase.kind] : "ממתין לבדיקה"}</strong>
+          <strong>{checked ? phaseKindLabels[phaseCase.kind] : "ממתינים לבדיקה"}</strong>
         </section>
         <section className={`panel-section quiz-feedback ${checked ? (isSelectedCorrect ? "correct" : "wrong") : ""}`}>
           <div className="section-heading">משוב</div>
@@ -4300,7 +4373,7 @@ function SaddleIntroBody() {
     <div className="intro-sub-expansion-body">
       <p>במקרה זה צורת הפתרון הכללית היא</p>
       <p className="intro-equation">
-        <MathText math="X(t)=c_1V_1e^{\lambda_1 t}+c_2V_2e^{\lambda_2 t}" />
+        <MathText block math="X(t)=c_1V_1e^{\lambda_1 t}+c_2V_2e^{\lambda_2 t}" />
       </p>
       <p>
         כאשר מציבים <MathText math="c_1=\pm1" />, <MathText math="c_2=0" /> מקבלים את הפתרונות{" "}
@@ -4338,7 +4411,7 @@ function StableNodeIntroBody() {
     <div className="intro-sub-expansion-body">
       <p>במקרה זה צורת הפתרון הכללית היא</p>
       <p className="intro-equation">
-        <MathText math="X(t)=c_1V_1e^{\lambda_1 t}+c_2V_2e^{\lambda_2 t}" />
+        <MathText block math="X(t)=c_1V_1e^{\lambda_1 t}+c_2V_2e^{\lambda_2 t}" />
       </p>
       <p>
         כאשר <MathText math="\lambda_1,\lambda_2<0" /> ו-<MathText math="\lambda_1\neq\lambda_2" />. כאשר מציבים{" "}
@@ -4378,7 +4451,7 @@ function UnstableNodeIntroBody() {
     <div className="intro-sub-expansion-body">
       <p>במקרה זה צורת הפתרון הכללית היא</p>
       <p className="intro-equation">
-        <MathText math="X(t)=c_1V_1e^{\lambda_1 t}+c_2V_2e^{\lambda_2 t}" />
+        <MathText block math="X(t)=c_1V_1e^{\lambda_1 t}+c_2V_2e^{\lambda_2 t}" />
       </p>
       <p>
         כאשר <MathText math="\lambda_1,\lambda_2>0" /> ו-<MathText math="\lambda_1\neq\lambda_2" />. כאשר מציבים{" "}
@@ -4425,7 +4498,7 @@ function StarIntroBody({ stable }: { stable: boolean }) {
         <MathText math="\lambda\neq 0" /> כלשהו. הפתרון הכללי במקרה כזה הוא
       </p>
       <p className="intro-equation">
-        <MathText math={String.raw`X(t)=\begin{pmatrix}a\\b\end{pmatrix}e^{\lambda t}`} />
+        <MathText block math={String.raw`X(t)=\begin{pmatrix}a\\b\end{pmatrix}e^{\lambda t}`} />
       </p>
       <p>
         כאשר <MathText math="a,b" /> יכולים להיות כל קומבינציה של סקלרים, היות וכל וקטור הוא וקטור עצמי של המטריצה.
@@ -4452,7 +4525,7 @@ function DefectiveNodeIntroBody({ stable }: { stable: boolean }) {
         <MathText math="(A-\lambda I)V_2=V_1" />. הפתרון הכללי הוא
       </p>
       <p className="intro-equation">
-        <MathText math={String.raw`X(t)=c_1e^{\lambda t}V_1+c_2e^{\lambda t}(tV_1+V_2)`} />
+        <MathText block math={String.raw`X(t)=c_1e^{\lambda t}V_1+c_2e^{\lambda t}(tV_1+V_2)`} />
       </p>
       <p>
         כאשר מציבים <MathText math="c_2=0" /> מקבלים את הפתרונות <MathText math="X(t)=c_1e^{\lambda t}V_1" />,
@@ -4525,7 +4598,7 @@ function CenterIntroBody() {
         הכללית היא
       </p>
       <p className="intro-equation">
-        <MathText math={String.raw`X(t)=c_1\operatorname{Re}(Ve^{i\beta t})+c_2\operatorname{Im}(Ve^{i\beta t})`} />
+        <MathText block math={String.raw`X(t)=c_1\operatorname{Re}(Ve^{i\beta t})+c_2\operatorname{Im}(Ve^{i\beta t})`} />
       </p>
       <p>
         פתרונות אלה מתארים אליפסות קונצנטריות, כולן עם סיבוב אחיד וכולן באותן פרופורציות של צירים.
@@ -4540,7 +4613,7 @@ function CenterIntroBody() {
         <MathText math="c_1=1" />, <MathText math="c_2=0" /> ונקבל פתרון לדוגמה
       </p>
       <p className="intro-equation">
-        <MathText math={String.raw`X(t)=\operatorname{Re}(Ve^{i\beta t})=U\cos(\beta t)-W\sin(\beta t)`} />
+        <MathText block math={String.raw`X(t)=\operatorname{Re}(Ve^{i\beta t})=U\cos(\beta t)-W\sin(\beta t)`} />
       </p>
       <p>
         כאשר כתבנו <MathText math="V=U+iW" />. מגדירים את המטריצה <MathText math="M=[\,U\ \ -W\,]" />, ואז
@@ -4573,6 +4646,7 @@ function SpiralIntroBody({ stable }: { stable: boolean }) {
       </p>
       <p className="intro-equation">
         <MathText
+          block
           math={String.raw`X(t)=e^{\alpha t}\left(c_1\operatorname{Re}(Ve^{i\beta t})+c_2\operatorname{Im}(Ve^{i\beta t})\right)`}
         />
       </p>
@@ -4644,7 +4718,7 @@ function EquilibriumLineIntroBody({ stable }: { stable: boolean }) {
         <MathText math="V_2" />. הפתרון הכללי הוא
       </p>
       <p className="intro-equation">
-        <MathText math="X(t)=c_1V_1+c_2V_2e^{\mu t}" />
+        <MathText block math="X(t)=c_1V_1+c_2V_2e^{\mu t}" />
       </p>
       <p>
         כאשר <MathText math="c_2=0" /> מקבלים נקודות שיווי־משקל על הישר. כאשר <MathText math="c_2\neq0" /> מקבלים
@@ -4669,7 +4743,7 @@ function NilpotentIntroBody() {
         הכללי הוא
       </p>
       <p className="intro-equation">
-        <MathText math="X(t)=c_1V_1+c_2(tV_1+V_2)" />
+        <MathText block math="X(t)=c_1V_1+c_2(tV_1+V_2)" />
       </p>
       <p>
         כאשר <MathText math="c_2=0" /> מקבלים נקודות שיווי־משקל על הישר בכיוון <MathText math="V_1" />. כאשר{" "}
@@ -4714,29 +4788,29 @@ function VietaPhasePortraitIntroBody() {
       </p>
       <p>עבור מטריצה</p>
       <p className="intro-equation">
-        <MathText math={String.raw`A=\begin{pmatrix}a&b\\c&d\end{pmatrix}`} />
+        <MathText block math={String.raw`A=\begin{pmatrix}a&b\\c&d\end{pmatrix}`} />
       </p>
       <p>הפולינום האופייני הוא</p>
       <p className="intro-equation">
-        <MathText math={String.raw`p_A(\lambda)=\lambda^2-(a+d)\lambda+(ad-bc)=0`} />
+        <MathText block math={String.raw`p_A(\lambda)=\lambda^2-(a+d)\lambda+(ad-bc)=0`} />
       </p>
       <p>נגדיר</p>
       <p className="intro-equation">
-        <MathText math={String.raw`\tau=\operatorname{tr}(A)=a+d,\qquad \delta=\det(A)=ad-bc`} />
+        <MathText block math={String.raw`\tau=\operatorname{tr}(A)=a+d,\qquad \delta=\det(A)=ad-bc`} />
       </p>
       <div className="intro-claim">
         <p>
           <strong>נוסחאות ויאטה.</strong> אם <MathText math="\lambda_1,\lambda_2" /> הם שורשי הפולינום האופייני, אזי
         </p>
         <p className="intro-equation">
-          <MathText math={String.raw`\lambda_1+\lambda_2=\tau,\qquad \lambda_1\lambda_2=\delta`} />
+          <MathText block math={String.raw`\lambda_1+\lambda_2=\tau,\qquad \lambda_1\lambda_2=\delta`} />
         </p>
       </div>
       <p>
         כדי להבין האם הערכים העצמיים ממשיים, מרוכבים או חוזרים, נשתמש גם בדיסקרימיננטה של הפולינום האופייני:
       </p>
       <p className="intro-equation">
-        <MathText math={String.raw`D=\tau^2-4\delta`} />
+        <MathText block math={String.raw`D=\tau^2-4\delta`} />
       </p>
       <p>
         כאשר <MathText math="D>0" /> הערכים העצמיים ממשיים ושונים, כאשר <MathText math="D=0" /> הם ממשיים וחוזרים,
@@ -4815,7 +4889,7 @@ function PhasePlaneIntro() {
           בעמוד זה נעסוק במערכות אוטונומיות מהצורה
         </p>
         <p className="intro-equation">
-          <MathText math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}f(x,y)\\g(x,y)\end{pmatrix}`} />
+          <MathText block math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}f(x,y)\\g(x,y)\end{pmatrix}`} />
         </p>
         <p>
           ובמיוחד, במקרה הפרטי מהצורה <MathText math="X'=AX" /> כאשר <MathText math="A" /> היא מטריצה ממשית מסדר{" "}
@@ -4835,12 +4909,14 @@ function PhasePlaneIntro() {
               <p>במקרה הדו־ממדי מקבלים את המערכת</p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}f(x(t),y(t))\\g(x(t),y(t))\end{pmatrix}`}
                 />
               </p>
               <p>לדוגמה, המערכת</p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}x(t)+e^{y(t)}\\y(t)x(t)\end{pmatrix}`}
                 />
               </p>
@@ -4849,6 +4925,7 @@ function PhasePlaneIntro() {
               </p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}tx(t)+e^{y(t)}\\y(t)x(t)\end{pmatrix}`}
                 />
               </p>
@@ -4866,6 +4943,7 @@ function PhasePlaneIntro() {
                 </p>
                 <p className="intro-equation">
                   <MathText
+                    block
                     math={String.raw`\begin{cases}\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}f(x(t),y(t))\\g(x(t),y(t))\end{pmatrix}\\\begin{pmatrix}x(t_0)\\y(t_0)\end{pmatrix}=\begin{pmatrix}x_0\\y_0\end{pmatrix}\end{cases}`}
                   />
                 </p>
@@ -4882,6 +4960,7 @@ function PhasePlaneIntro() {
                 </p>
                 <p className="intro-equation">
                   <MathText
+                    block
                     math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}f(x(t),y(t))\\g(x(t),y(t))\end{pmatrix}`}
                   />
                 </p>
@@ -4910,6 +4989,7 @@ function PhasePlaneIntro() {
               </p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}-y(t)\\x(t)\end{pmatrix}`}
                 />
               </p>
@@ -4930,6 +5010,7 @@ function PhasePlaneIntro() {
               </p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}f(x(t),y(t))\\g(x(t),y(t))\end{pmatrix}`}
                 />
               </p>
@@ -4943,6 +5024,7 @@ function PhasePlaneIntro() {
               </p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}e^{x(t)}-1\\y(t)\end{pmatrix}`}
                 />
               </p>
@@ -4952,12 +5034,14 @@ function PhasePlaneIntro() {
               </p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}x'(t)\\y'(t)\end{pmatrix}=\begin{pmatrix}f(x(t),y(t))\\g(x(t),y(t))\end{pmatrix}`}
                 />
               </p>
               <p>ליניאריזציה סביב הנקודה <MathText math="(x_0,y_0)" /> היא המשוואה המקורבת</p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}u'(t)\\v'(t)\end{pmatrix}=\begin{pmatrix}\frac{\partial f}{\partial x}(x_0,y_0)u(t)+\frac{\partial f}{\partial y}(x_0,y_0)v(t)\\\frac{\partial g}{\partial x}(x_0,y_0)u(t)+\frac{\partial g}{\partial y}(x_0,y_0)v(t)\end{pmatrix}`}
                 />
               </p>
@@ -4980,17 +5064,19 @@ function PhasePlaneIntro() {
                 <strong>דוגמה.</strong> נמצא את הליניאריזציה סביב הראשית למערכת שהצגנו קודם לכן. נגדיר
               </p>
               <p className="intro-equation">
-                <MathText math="f(x,y)=e^x-1,\quad g(x,y)=y" />
+                <MathText block math="f(x,y)=e^x-1,\quad g(x,y)=y" />
               </p>
               <p>כלומר</p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}\frac{\partial f}{\partial x}(0,0)&\frac{\partial f}{\partial y}(0,0)\\\frac{\partial g}{\partial x}(0,0)&\frac{\partial g}{\partial y}(0,0)\end{pmatrix}=\begin{pmatrix}1&0\\0&1\end{pmatrix}`}
                 />
               </p>
               <p>ולכן, הליניאריזציה תהיה</p>
               <p className="intro-equation">
                 <MathText
+                  block
                   math={String.raw`\begin{pmatrix}u'(t)\\v'(t)\end{pmatrix}=\begin{pmatrix}1&0\\0&1\end{pmatrix}\begin{pmatrix}u(t)\\v(t)\end{pmatrix}=\begin{pmatrix}u(t)\\v(t)\end{pmatrix}`}
                 />
               </p>
@@ -5087,7 +5173,7 @@ export default function PhasePlaneModule() {
           <p className="course-kicker">104136 · משוואות דיפרנציאליות רגילות</p>
           <h1>מישור הפאזה</h1>
         </div>
-        <nav aria-label="Course modules">
+        <nav aria-label="ניווט באתר">
           <Link className="module-pill" href="/">
             עמוד הבית
           </Link>
@@ -5117,7 +5203,7 @@ export default function PhasePlaneModule() {
             type="button"
             onClick={() => setActiveTab("self-practice")}
           >
-            תרגול עצמי
+            תרגול
           </button>
         </nav>
       </header>

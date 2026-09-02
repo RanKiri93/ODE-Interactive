@@ -130,7 +130,7 @@ export function StabilityStage({
             const parts = formatRootGroupHintParts(group);
             return (
               <span className="stability-root-item" key={`stability-root-${index}`}>
-            <MathText size="compact" math={parts.math} />
+            <MathText variant="compact" math={parts.math} />
                 {parts.suffix ? <span className="stability-root-suffix">{parts.suffix}</span> : null}
               </span>
             );

@@ -66,7 +66,7 @@ export function InitialConditionsStage({
         <div className="initial-condition-list">
           {data.initialValues.map((value, index) => (
             <span className="initial-condition-item" key={`initial-value-${index}`}>
-              <MathText size="compact" math={formatInitialValueLatex(index, value)} />
+              <MathText variant="compact" math={formatInitialValueLatex(index, value)} />
             </span>
           ))}
         </div>

@@ -324,7 +324,7 @@ export function BasisElementComposer({
             disabled={disabled}
             onClick={() => onSelectTemplate(option.id)}
           >
-            <MathText size="compact" math={option.label(variable)} />
+            <MathText variant="compact" math={option.label(variable)} />
           </button>
         ))}
       </div>

@@ -49,7 +49,7 @@ function RadioCard({
         {description ? <div className="stability-option-description">{description}</div> : null}
         {latex ? (
           <span className="reconstruction-radio-latex">
-            <MathText size="compact" math={latex} />
+            <MathText variant="compact" math={latex} />
           </span>
         ) : null}
       </div>
@@ -155,7 +155,7 @@ export function LambdaConstraintInput({
           <div className="lambda-option-content">
             <div className="lambda-option-title">{option.label}</div>
             <span className="lambda-option-math">
-              <MathText size="compact" math={option.latex} />
+              <MathText variant="compact" math={option.latex} />
             </span>
           </div>
         </label>
@@ -197,7 +197,7 @@ export function ReconstructionImpossibleReasonInput({
                   <>
                     {" "}
                     <span className="stability-inline-math">
-                      <MathText size="compact" math={option.latex} />
+                      <MathText variant="compact" math={option.latex} />
                     </span>
                   </>
                 ) : null}

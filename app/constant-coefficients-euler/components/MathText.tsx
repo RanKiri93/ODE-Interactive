@@ -5,14 +5,11 @@ import { inlineMathClassName, type MathDisplayVariant } from "../math/mathTypogr
 import { DisplayMath } from "./DisplayMath";
 
 export type { MathDisplayVariant };
-/** @deprecated Use MathDisplayVariant */
-export type MathSize = MathDisplayVariant;
 
 type MathTextProps = {
   math: string;
-  /** Semantic size variant. Alias: `size` is kept for compatibility. */
+  /** Semantic size variant. */
   variant?: MathDisplayVariant;
-  size?: MathDisplayVariant;
   /** When true, renders through the shared DisplayMath path. */
   block?: boolean;
   className?: string;
@@ -21,11 +18,10 @@ type MathTextProps = {
 export function MathText({
   math,
   variant,
-  size,
   block = false,
   className,
 }: MathTextProps) {
-  const resolvedVariant = variant ?? size ?? "inline";
+  const resolvedVariant = variant ?? "inline";
 
   if (block) {
     return <DisplayMath latex={math} className={className} />;
